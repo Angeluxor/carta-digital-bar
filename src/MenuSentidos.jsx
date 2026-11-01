@@ -247,7 +247,7 @@ function Card({ item, accent, accentText, index, hidden, loop, qty, onQty }) {
     <article
       aria-hidden={hidden || undefined}
       style={{ borderColor: accent, animationDelay: `${Math.min(index, 8) * 45}ms` }}
-      className={`fade-up no-scrollbar relative flex h-full w-[72vw] max-w-[17rem] shrink-0 flex-col overflow-y-auto rounded-xl border-2 bg-surface p-4 transition-transform duration-300 hover:-translate-y-0.5 sm:w-64 ${loop ? 'snap-center' : 'snap-start'}`}
+      className={`fade-up no-scrollbar touch-pan-x relative flex h-full w-[72vw] max-w-[17rem] shrink-0 flex-col overflow-y-auto rounded-xl border-2 bg-surface p-4 transition-transform duration-300 hover:-translate-y-0.5 sm:w-64 ${loop ? 'snap-center' : 'snap-start'}`}
     >
       <span className="pointer-events-none absolute left-1.5 top-1.5 h-3 w-3 border-l border-t" style={{ borderColor: accent }} />
       <span className="pointer-events-none absolute bottom-1.5 right-1.5 h-3 w-3 border-b border-r" style={{ borderColor: accent }} />
@@ -358,7 +358,7 @@ function Section({ titulo, accent, accentText, items, qtys, onQty }) {
       </div>
 
       {/* Chips de categoría: una fila con scroll horizontal, también en celular */}
-      <div className="no-scrollbar -mx-3 mt-1.5 flex gap-1.5 overflow-x-auto px-3 sm:-mx-6 sm:px-6" role="tablist">
+      <div className="no-scrollbar touch-pan-x -mx-3 mt-1.5 flex gap-1.5 overflow-x-auto px-3 sm:-mx-6 sm:px-6" role="tablist">
         {categorias.map((c) => (
           <button key={c} role="tab" aria-selected={cat === c}
             onClick={(e) => { setCat(c); e.currentTarget.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' }); }}
@@ -369,7 +369,7 @@ function Section({ titulo, accent, accentText, items, qtys, onQty }) {
       <div className="relative mt-2 min-h-0 flex-1">
         {n === 0 && <p className="absolute inset-0 flex items-center justify-center text-sm text-muted">Sin resultados en {titulo.toLowerCase()}.</p>}
         <div ref={scroller} onScroll={onScroll}
-          className={`no-scrollbar flex h-full gap-3 overflow-x-auto scroll-smooth pb-1 ${loop ? 'snap-x snap-mandatory' : 'snap-x snap-proximity'} ${n === 0 ? 'invisible' : ''}`}>
+          className={`no-scrollbar touch-pan-x flex h-full gap-3 overflow-x-auto scroll-smooth pb-1 ${loop ? 'snap-x snap-mandatory' : 'snap-x snap-proximity'} ${n === 0 ? 'invisible' : ''}`}>
           {Array.from({ length: copies }).flatMap((_, c) =>
             visible.map((it, i) => (
               <Card key={`${it.id}-${c}`} item={it} index={i} accent={accent} accentText={accentText} hidden={c !== mid} loop={loop} qty={qtys[it.id] || 0} onQty={onQty} />
