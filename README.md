@@ -6,7 +6,7 @@ Los datos salen de una hoja de Google Sheets, así que el personal actualiza pre
 ## Características
 
 - **Pantalla dividida** Comidas / Bebidas con divisor redimensionable (arrastre, flechas ^ v y teclado).
-- **Carrusel infinito** por sección, con tarjetas centradas, chips de categoría y buscador en tiempo real.
+- **Carrusel infinito** por sección, con tarjetas centradas y chips de categoría.
 - **Modo noche / día** (noche por defecto).
 - **Tarjetas tipográficas** con insignia "Recomendado" y sello "Agotado".
 - **Pedido para mostrar al mesero:** botones `+ / −` en cada tarjeta, botón central **Listo** y hoja "Tu pedido" con cantidades y total.

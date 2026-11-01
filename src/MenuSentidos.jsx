@@ -77,6 +77,7 @@ import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useSta
 const SHEET_URL = import.meta.env?.VITE_SHEET_URL || 'https://opensheet.elk.sh/1wwvCs-8EAWvOMZ_8r2Fpy_k5T40YCTq59Ob2MHDwJRs/1';
 const LEAVES = '/hojas_laterales.webp';
 const LS_THEME = 'sentidos:theme';
+const LS_TEXT = 'sentidos:text';
 const LS_ORDER = 'sentidos:order';
 const MAX_QTY = 20;
 
@@ -133,7 +134,6 @@ const Icon = ({ children, className = 'h-5 w-5', fill = 'none' }) => (
   </svg>
 );
 const I = {
-  search: <Icon className="h-4 w-4"><circle cx="11" cy="11" r="6.5" /><path d="m20 20-4-4" /></Icon>,
   left: <Icon><path d="m15 5-7 7 7 7" /></Icon>,
   right: <Icon><path d="m9 5 7 7-7 7" /></Icon>,
   up: <Icon><path d="m6 15 6-6 6 6" /></Icon>,
@@ -261,16 +261,16 @@ function Card({ item, accent, accentText, index, hidden, loop, qty, onQty }) {
             </span>
           )}
         </div>
-        <h3 className={`mt-2 font-display font-semibold leading-tight text-ink ${item.nombre.length > 22 ? 'text-xl' : 'text-2xl'}`}>{item.nombre}</h3>
-        <div className="my-2 h-px w-10" style={{ background: accent }} />
-        <p className="flex-1 text-[13px] leading-relaxed text-body">{item.descripcion}</p>
+        <h3 className={`mt-2 font-display font-bold leading-[1.05] tracking-tight text-ink ${item.nombre.length > 22 ? 'text-[1.7rem]' : 'text-[2rem]'}`}>{item.nombre}</h3>
+        <div className="my-2.5 h-0.5 w-12 rounded-full" style={{ background: accent }} />
+        <p className="desc flex-1 text-body">{item.descripcion}</p>
         {/* Precio a la derecha, con línea punteada guía como en las cartas impresas */}
         <div className="mt-3 flex items-end gap-2">
           {item.disponible && (
             <Stepper qty={qty} onChange={(d) => onQty(item.id, d)} accent={accent} textColor={accentText} label={item.nombre} tabIndex={hidden ? -1 : 0} />
           )}
           <span className="mb-1.5 flex-1 border-b border-dotted opacity-50" style={{ borderColor: accent }} />
-          <p className="font-display text-xl font-bold" style={{ color: accentText }}>{formatPrice(item.precio)}</p>
+          <p className="price font-display text-xl font-bold" style={{ color: accentText }}>{formatPrice(item.precio)}</p>
         </div>
       </div>
       {!item.disponible && (
@@ -283,8 +283,8 @@ function Card({ item, accent, accentText, index, hidden, loop, qty, onQty }) {
 /* ------------------------------------------------------------------ */
 /*  Sección con pills, dropdown y carrusel                             */
 /* ------------------------------------------------------------------ */
-function Section({ titulo, accent, accentText, items, allItems, query, qtys, onQty }) {
-  const categorias = useMemo(() => ['Todas', ...new Set(allItems.map((i) => i.categoria))], [allItems]);
+function Section({ titulo, accent, accentText, items, qtys, onQty }) {
+  const categorias = useMemo(() => ['Todas', ...new Set(items.map((i) => i.categoria))], [items]);
   const [cat, setCat] = useState('Todas');
   const scroller = useRef(null);
   const [boxW, setBoxW] = useState(0);
@@ -320,7 +320,7 @@ function Section({ titulo, accent, accentText, items, allItems, query, qtys, onQ
     el.style.scrollBehavior = 'auto';
     el.scrollLeft = loop ? first.offsetLeft - (el.clientWidth - first.offsetWidth) / 2 : 0;
     el.style.scrollBehavior = '';
-  }, [cat, query, n, loop, mid]);
+  }, [cat, n, loop, mid]);
 
   // Al quedar quieto, volver a la copia central (mismo punto visual => salto invisible)
   const idle = useRef(null);
@@ -348,7 +348,7 @@ function Section({ titulo, accent, accentText, items, allItems, query, qtys, onQ
   };
 
   const pill = (active) =>
-    `shrink-0 whitespace-nowrap rounded-full border px-3 py-0.5 text-xs font-medium transition-colors duration-200 ${active ? 'text-black' : 'border-line text-muted hover:text-ink'}`;
+    `pill-cat shrink-0 whitespace-nowrap rounded-full border px-3 py-0.5 text-xs font-medium transition-colors duration-200 ${active ? 'text-black' : 'border-line text-muted hover:text-ink'}`;
 
   return (
     <section className="flex h-full min-h-0 flex-col px-3 pb-2 pt-2 sm:px-6" aria-label={titulo}>
@@ -394,7 +394,8 @@ function Section({ titulo, accent, accentText, items, allItems, query, qtys, onQ
 export default function MenuSentidos() {
   const [base, setBase] = useState(INITIAL_DATA);
   const [theme, setTheme] = useState(() => readLS(LS_THEME, 'night'));
-  const [query, setQuery] = useState('');
+  const [bigText, setBigText] = useState(() => readLS(LS_TEXT, 'normal') === 'lg');
+  useEffect(() => { writeLS(LS_TEXT, bigText ? 'lg' : 'normal'); }, [bigText]);
   const [ratio, setRatio] = useState(0.5);
   const [dragging, setDragging] = useState(false);
   const split = useRef(null);
@@ -450,25 +451,54 @@ export default function MenuSentidos() {
   };
   useEffect(() => { if (count === 0) setSheetOpen(false); }, [count]);
 
-  const q = norm(query);
-  const filtered = useMemo(
-    () => (q ? data.filter((d) => norm(`${d.nombre} ${d.descripcion} ${d.categoria}`).includes(q)) : data),
-    [data, q],
-  );
-  const comidas = useMemo(() => filtered.filter((d) => d.tipo === 'comida'), [filtered]);
-  const bebidas = useMemo(() => filtered.filter((d) => d.tipo === 'bebida'), [filtered]);
-  const allComidas = useMemo(() => data.filter((d) => d.tipo === 'comida'), [data]);
-  const allBebidas = useMemo(() => data.filter((d) => d.tipo === 'bebida'), [data]);
+  const comidas = useMemo(() => data.filter((d) => d.tipo === 'comida'), [data]);
+  const bebidas = useMemo(() => data.filter((d) => d.tipo === 'bebida'), [data]);
 
   /* Divisor redimensionable (drag + tap en flechas + teclado) */
   const clamp = (v) => Math.min(0.85, Math.max(0.15, v));
-  const onPointerDown = (e) => { e.currentTarget.setPointerCapture(e.pointerId); setDragging(true); };
+  // El botón "Listo" también arrastra el divisor: si el dedo casi no se movió, cuenta como toque
+  const pill = useRef({ down: false, y: 0, moved: 0 });
+  const onPointerDown = (e) => {
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* puntero ya liberado */ }
+    pill.current = { active: true, down: !!e.target.closest?.("[data-pill]"), y: e.clientY, moved: 0 };
+    setDragging(true);
+  };
   const onPointerMove = (e) => {
     if (!dragging) return;
+    pill.current.moved = Math.max(pill.current.moved, Math.abs(e.clientY - pill.current.y));
     const r = split.current?.getBoundingClientRect();
     if (r) setRatio(clamp((e.clientY - r.top) / r.height));
   };
-  const onPointerUp = () => setDragging(false);
+  const onPointerUp = () => {
+    if (pill.current.active && pill.current.down && pill.current.moved < 8) openSheet();
+    pill.current.active = false;
+    pill.current.down = false;
+    setDragging(false);
+  };
+  /* Gesto vertical sobre los bloques: bloqueo de dirección (horizontal = carrusel, vertical = divisor) */
+  const g = useRef(null);
+  const gDown = (e) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    g.current = { id: e.pointerId, x: e.clientX, y: e.clientY, r: ratio, mode: null };
+  };
+  const gMove = (e) => {
+    const s0 = g.current;
+    if (!s0 || s0.id !== e.pointerId || s0.mode === 'h') return;
+    const dx = e.clientX - s0.x; const dy = e.clientY - s0.y;
+    if (!s0.mode) {
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 10) return;
+      if (Math.abs(dy) > Math.abs(dx) * 1.2) {
+        s0.mode = 'v';
+        try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* ya liberado */ }
+        setDragging(true);
+      } else { s0.mode = 'h'; return; }
+    }
+    const h = split.current?.getBoundingClientRect().height;
+    if (h) setRatio(clamp(s0.r + dy / h));
+  };
+  const gEnd = () => { if (g.current?.mode === 'v') setDragging(false); g.current = null; };
+  const gProps = { onPointerDown: gDown, onPointerMove: gMove, onPointerUp: gEnd, onPointerCancel: gEnd };
+  const onPointerCancel = () => { pill.current.down = false; setDragging(false); };
   const nudge = (d) => setRatio((r) => clamp(r + d));
   const onKey = (e) => {
     if (e.key === 'ArrowUp') { e.preventDefault(); nudge(-0.05); }
@@ -476,7 +506,7 @@ export default function MenuSentidos() {
   };
 
   return (
-    <div data-theme={theme} className="relative flex h-full flex-col overflow-hidden bg-bg font-sans text-ink transition-colors duration-500">
+    <div data-theme={theme} data-text={bigText ? 'lg' : undefined} className="relative flex h-full flex-col overflow-hidden bg-bg font-sans text-ink transition-colors duration-500">
       {/* ---------- Cabecera fija ---------- */}
       <header className="relative z-20 shrink-0 border-b border-line">
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -486,7 +516,10 @@ export default function MenuSentidos() {
         </div>
         <div className="relative px-3 pb-2 pt-2 sm:px-6">
           <div className="flex items-center gap-2">
-            <span className="w-7" aria-hidden />
+            <button onClick={() => setBigText((b) => !b)} aria-pressed={bigText} aria-label={bigText ? 'Texto normal' : 'Aumentar tamaño del texto'}
+              className={`flex h-7 w-14 items-center justify-center rounded-full border border-gold font-display font-bold leading-none transition ${bigText ? 'bg-gold text-black' : 'bg-surface/80 text-gold'}`}>
+              <span className="text-xs">A</span><span className="text-lg">A</span>
+            </button>
             <h1 className="flex-1 text-center font-display text-2xl font-bold leading-none tracking-wide text-gold sm:text-4xl">
               Sentidos
               <span className="block font-sans text-[9px] font-medium uppercase tracking-[0.35em] text-ink sm:text-xs">restaurante-bar</span>
@@ -498,26 +531,21 @@ export default function MenuSentidos() {
               <span className={`z-10 h-5 w-5 rounded-full bg-gold shadow transition-transform duration-300 ${theme === 'night' ? 'translate-x-7' : 'translate-x-0'}`} />
             </button>
           </div>
-          <label className="relative mx-auto mt-2 block max-w-xl">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">{I.search}</span>
-            <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar plato o bebida…"
-              className="w-full rounded-full border border-line bg-surface/90 py-1.5 pl-9 pr-3 text-sm text-ink outline-none transition focus:border-gold" />
-          </label>
         </div>
       </header>
 
       {/* ---------- Pantalla dividida ---------- */}
       <main ref={split} className="relative flex min-h-0 flex-1 flex-col">
-        <div className={`min-h-0 shrink-0 overflow-hidden ${dragging ? '' : 'transition-[height] duration-300 ease-out'}`} style={{ height: `${ratio * 100}%` }}>
-          <Section {...SECTIONS[0]} allItems={allComidas} items={comidas} query={q} qtys={order} onQty={onQty} />
+        <div {...gProps} className={`touch-pan-x min-h-0 shrink-0 overflow-hidden ${dragging ? '' : 'transition-[height] duration-300 ease-out'}`} style={{ height: `${ratio * 100}%` }}>
+          <Section {...SECTIONS[0]} items={comidas} qtys={order} onQty={onQty} />
         </div>
 
         <div role="separator" aria-orientation="horizontal" aria-valuenow={Math.round(ratio * 100)} aria-valuemin={15} aria-valuemax={85} tabIndex={0}
-          onKeyDown={onKey} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}
+          onKeyDown={onKey} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerCancel}
           className="relative z-10 flex h-9 shrink-0 cursor-row-resize touch-none select-none items-center justify-center border-y border-line bg-surface outline-none focus-visible:border-gold">
           <button onClick={() => nudge(-0.15)} onPointerDown={(e) => e.stopPropagation()} aria-label="Subir divisor" className="px-4 py-2 text-gold transition hover:scale-125">{I.up}</button>
           {count > 0 ? (
-            <button key={count} onClick={openSheet} onPointerDown={(e) => e.stopPropagation()} aria-label={`Ver pedido, ${count} ítems`}
+            <button key={count} data-pill onClick={(e) => { if (e.detail === 0) openSheet(); }} aria-label={`Ver pedido, ${count} ítems`}
               className="pop h-7 whitespace-nowrap rounded-full bg-gold px-4 text-xs font-bold text-black shadow-[0_0_14px_rgba(223,180,87,.55)] transition active:scale-95">
               Listo · {count}{total > 0 ? ` · ${formatPrice(total)}` : ''}
             </button>
@@ -527,8 +555,8 @@ export default function MenuSentidos() {
           <button onClick={() => nudge(0.15)} onPointerDown={(e) => e.stopPropagation()} aria-label="Bajar divisor" className="px-4 py-2 text-leaf transition hover:scale-125">{I.down}</button>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-hidden">
-          <Section {...SECTIONS[1]} allItems={allBebidas} items={bebidas} query={q} qtys={order} onQty={onQty} />
+        <div {...gProps} className="touch-pan-x min-h-0 flex-1 overflow-hidden">
+          <Section {...SECTIONS[1]} items={bebidas} qtys={order} onQty={onQty} />
         </div>
       </main>
 

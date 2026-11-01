@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 html, body, #root { height: 100%; height: 100dvh; }
-body { margin: 0; overflow: hidden; font-family: 'Montserrat', system-ui, sans-serif; }
+body { margin: 0; overflow: hidden; overscroll-behavior: none; font-family: 'Montserrat', system-ui, sans-serif; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
@@ -30,3 +30,12 @@ body { margin: 0; overflow: hidden; font-family: 'Montserrat', system-ui, sans-s
 @keyframes pop { 0% { transform: scale(.85); } 60% { transform: scale(1.08); } 100% { transform: scale(1); } }
 .pop { animation: pop .3s ease both; }
 @media (prefers-reduced-motion: reduce) { .pop { animation: none; } }
+
+/* Números de lectura clara (alineados a la altura de las mayúsculas) en todo el texto display */
+.font-display, .font-sans { font-variant-numeric: lining-nums; font-feature-settings: 'lnum' 1; }
+
+/* Tamaño de texto: normal / grande (accesibilidad) */
+.desc { font-size: 0.9375rem; line-height: 1.5; }
+[data-text='lg'] .desc { font-size: 1.1875rem; }
+[data-text='lg'] .price { font-size: 1.75rem; }
+[data-text='lg'] .pill-cat { font-size: 0.9375rem; padding: 0.25rem 0.85rem; }

@@ -8,7 +8,7 @@ Estado del producto y evolutivos acordados. Este documento es la fuente de verda
 - Datos desde Google Sheets vía OpenSheet (`/<ID_HOJA>/1`, primera pestaña), con respaldo local `INITIAL_DATA`.
   Columnas: `id, tipo, categoria, nombre, descripcion, precio, disponible, destacado`.
 - Pantalla dividida Comidas / Bebidas con divisor redimensionable (arrastre, flechas ^ v y teclado).
-- Carrusel infinito por sección, tarjetas centradas, chips de categoría, buscador en tiempo real.
+- Carrusel infinito por sección, tarjetas centradas y chips de categoría.
 - Modo noche / día (el modo día aún no está verificado visualmente en un navegador sin oscurecimiento forzado).
 - Tarjetas tipográficas: insignia "Recomendado", sello "Agotado", precio con línea punteada.
 - **Pedido "solo mostrar"**: botones `+ / −` en cada tarjeta, botón central **"Listo · n · total"** sobre el divisor
