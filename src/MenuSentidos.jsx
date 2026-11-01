@@ -1,0 +1,542 @@
+// Datos de respaldo (de menu_sentidos.csv; precio 0 = "Consultar")
+const INITIAL_DATA = [
+  {"id":"pf-01","tipo":"comida","categoria":"Platos Fuertes","nombre":"Res al vino o en chimichurri","descripcion":"250 gr de res al vino o en chimichurri","precio":0,"disponible":true,"destacado":true},
+  {"id":"pf-02","tipo":"comida","categoria":"Platos Fuertes","nombre":"Cerdo o Pollo BBQ","descripcion":"250gr de cerdo o pollo asado con queso mozzarella y salsa BBQ","precio":0,"disponible":true,"destacado":false},
+  {"id":"pf-03","tipo":"comida","categoria":"Platos Fuertes","nombre":"Cerdo o Pollo Chimichurri","descripcion":"250gr de cerdo o pollo asado en salsa de chimichurri","precio":0,"disponible":true,"destacado":false},
+  {"id":"pf-04","tipo":"comida","categoria":"Platos Fuertes","nombre":"Pechuga Rellena Maracuyá","descripcion":"250gr de pechuga de pollo rellena de jamón y queso en salsa de maracuyá","precio":0,"disponible":true,"destacado":true},
+  {"id":"pf-05","tipo":"comida","categoria":"Platos Fuertes","nombre":"Cerdo y Pollo Mozzarella","descripcion":"250gr de cerdo y pollo intercalados con queso mozzarella","precio":0,"disponible":true,"destacado":false},
+  {"id":"pf-06","tipo":"comida","categoria":"Platos Fuertes","nombre":"Pollo o Cerdo Criolla","descripcion":"250 gr de pollo o cerdo en salsa criolla","precio":0,"disponible":true,"destacado":false},
+  {"id":"pa-01","tipo":"comida","categoria":"Pa' Picar","nombre":"Nachos con Guacamole","descripcion":"Nachos con salsa guacamole hogao de la casa y suero costeño","precio":0,"disponible":true,"destacado":true},
+  {"id":"pa-02","tipo":"comida","categoria":"Pa' Picar","nombre":"Chorizos Acaramelados","descripcion":"2.5 o 4 chorizos de ternera en trozos con julianas de cebolla en reducción de BBQ y tabasco con papas a la francesa","precio":0,"disponible":true,"destacado":false},
+  {"id":"pa-03","tipo":"comida","categoria":"Pa' Picar","nombre":"Chorizos Endiablados","descripcion":"2.5 o 4 chorizos de ternera en trozos con julianas de cebolla en reducción de BBQ y tabasco con papas a la francesa","precio":0,"disponible":true,"destacado":false},
+  {"id":"pa-04","tipo":"comida","categoria":"Pa' Picar","nombre":"Picada Sentidos","descripcion":"Longanizas butifarras y chorizos en salsa BBQ dulce acompañados de papas a la francesa","precio":0,"disponible":true,"destacado":true},
+  {"id":"pa-05","tipo":"comida","categoria":"Pa' Picar","nombre":"Trozos de Cerdo Chimichurri","descripcion":"300 gr trozos de cerdo en chimichurri con papas a la francesa","precio":0,"disponible":true,"destacado":false},
+  {"id":"ot-01","tipo":"comida","categoria":"Otros","nombre":"Crepes Stroganoff","descripcion":"200gr de julianas de pollo o res con tocineta y cebolla con finas hierbas en reducción de crema de leche salsa soya mostaza acompañado de pan tostado","precio":0,"disponible":true,"destacado":false},
+  {"id":"ot-02","tipo":"comida","categoria":"Otros","nombre":"Paquete de Platanitos o Papitas","descripcion":"Paquete individual de platanitos o papitas","precio":0,"disponible":true,"destacado":false},
+  {"id":"co-01","tipo":"bebida","categoria":"Coctelería","nombre":"Caipiriña","descripcion":"Cachaza (aguardiente de Brasil) trozos de limón y azúcar","precio":0,"disponible":true,"destacado":false},
+  {"id":"co-02","tipo":"bebida","categoria":"Coctelería","nombre":"Coffee Martini","descripcion":"Ginebra y licor de café","precio":0,"disponible":true,"destacado":true},
+  {"id":"co-03","tipo":"bebida","categoria":"Coctelería","nombre":"Gin Blue","descripcion":"Ginebra Curazao y almíbar","precio":0,"disponible":true,"destacado":false},
+  {"id":"co-04","tipo":"bebida","categoria":"Coctelería","nombre":"Gin Tonic","descripcion":"Ginebra Agua tónica y gajos de limón","precio":0,"disponible":true,"destacado":true},
+  {"id":"co-05","tipo":"bebida","categoria":"Coctelería","nombre":"Highball Manzana","descripcion":"Whisky Sprite y trozos de manzana","precio":0,"disponible":true,"destacado":false},
+  {"id":"co-06","tipo":"bebida","categoria":"Coctelería","nombre":"Margarita","descripcion":"Tequila Triple sec y limón","precio":0,"disponible":true,"destacado":true},
+  {"id":"co-07","tipo":"bebida","categoria":"Coctelería","nombre":"Ruso Negro","descripcion":"Vodka Licor de café y gotas de limón","precio":0,"disponible":true,"destacado":false},
+  {"id":"co-08","tipo":"bebida","categoria":"Coctelería","nombre":"Orgasmo","descripcion":"Crema de whisky Amaretto Licor de café y crema","precio":0,"disponible":true,"destacado":false},
+  {"id":"co-09","tipo":"bebida","categoria":"Coctelería","nombre":"Tequila Sunrise","descripcion":"Tequila Triple sec Jugo de naranja y granadina","precio":0,"disponible":true,"destacado":false},
+  {"id":"co-10","tipo":"bebida","categoria":"Coctelería","nombre":"Tinto de Verano","descripcion":"Vino tinto Sprite y zumo de limón","precio":0,"disponible":true,"destacado":false},
+  {"id":"co-11","tipo":"bebida","categoria":"Coctelería","nombre":"Vino Caliente","descripcion":"Vino tinto Jugo de naranja y especias","precio":0,"disponible":true,"destacado":false},
+  {"id":"ce-01","tipo":"bebida","categoria":"Cervezas","nombre":"Artesanal 3 Cordilleras","descripcion":"Cerveza artesanal 3 Cordilleras","precio":0,"disponible":true,"destacado":false},
+  {"id":"ce-02","tipo":"bebida","categoria":"Cervezas","nombre":"Extranjeras","descripcion":"Cervezas importadas (desde)","precio":0,"disponible":true,"destacado":false},
+  {"id":"ce-03","tipo":"bebida","categoria":"Cervezas","nombre":"Club Colombia","descripcion":"Club Colombia Dorada / Roja / Negra","precio":0,"disponible":true,"destacado":false},
+  {"id":"ce-04","tipo":"bebida","categoria":"Cervezas","nombre":"Nacionales Tradicionales","descripcion":"Pilsen - Costeña - Águila - Póker","precio":0,"disponible":true,"destacado":false},
+  {"id":"ce-05","tipo":"bebida","categoria":"Cervezas","nombre":"Tecate","descripcion":"Cerveza Tecate","precio":0,"disponible":true,"destacado":false},
+  {"id":"ce-06","tipo":"bebida","categoria":"Cervezas","nombre":"Michelada","descripcion":"Michelada tradicional (Según la cerveza)","precio":0,"disponible":true,"destacado":false},
+  {"id":"ce-07","tipo":"bebida","categoria":"Cervezas","nombre":"Michelada Envenenada","descripcion":"Michelada con preparación especial de la casa","precio":0,"disponible":true,"destacado":false},
+  {"id":"ce-08","tipo":"bebida","categoria":"Cervezas","nombre":"Michelada Tabasco","descripcion":"Michelada con picante tabasco","precio":0,"disponible":true,"destacado":false},
+  {"id":"ro-01","tipo":"bebida","categoria":"Carta de Rones","nombre":"Zacapa 23 años","descripcion":"Trago doble de Ron Zacapa 23 años","precio":0,"disponible":true,"destacado":true},
+  {"id":"ro-02","tipo":"bebida","categoria":"Carta de Rones","nombre":"Hechicera","descripcion":"Trago doble de Ron La Hechicera","precio":0,"disponible":true,"destacado":false},
+  {"id":"ro-03","tipo":"bebida","categoria":"Carta de Rones","nombre":"Santa Teresa Reserva","descripcion":"Trago doble de Ron Santa Teresa Reserva","precio":0,"disponible":true,"destacado":false},
+  {"id":"ro-04","tipo":"bebida","categoria":"Carta de Rones","nombre":"Barceló Imperial","descripcion":"Trago doble de Ron Barceló Imperial","precio":0,"disponible":true,"destacado":false},
+  {"id":"ro-05","tipo":"bebida","categoria":"Carta de Rones","nombre":"Diplomático","descripcion":"Trago doble de Ron Diplomático","precio":0,"disponible":true,"destacado":false},
+  {"id":"ro-06","tipo":"bebida","categoria":"Carta de Rones","nombre":"Botran 15 años","descripcion":"Trago doble de Ron Botran 15 años","precio":0,"disponible":true,"destacado":false},
+  {"id":"ro-07","tipo":"bebida","categoria":"Carta de Rones","nombre":"Sailor Jerry","descripcion":"Trago doble de Ron Sailor Jerry","precio":0,"disponible":true,"destacado":false},
+  {"id":"ro-08","tipo":"bebida","categoria":"Carta de Rones","nombre":"Gran Solera 19 años","descripcion":"Trago doble de Ron Gran Solera 19 años","precio":0,"disponible":true,"destacado":false},
+  {"id":"ro-09","tipo":"bebida","categoria":"Carta de Rones","nombre":"Medellín 12 años","descripcion":"Trago doble de Ron Medellín 12 años","precio":0,"disponible":true,"destacado":false},
+  {"id":"ro-10","tipo":"bebida","categoria":"Carta de Rones","nombre":"Caldas 15 años Reserva","descripcion":"Trago doble de Ron Caldas 15 años Reserva","precio":0,"disponible":true,"destacado":false},
+  {"id":"ro-11","tipo":"bebida","categoria":"Carta de Rones","nombre":"Caldas 8 años Carta de oro","descripcion":"Trago doble de Ron Caldas 8 años Carta de oro","precio":0,"disponible":true,"destacado":false},
+  {"id":"li-01","tipo":"bebida","categoria":"Licores","nombre":"Aguardiente Antioqueño","descripcion":"Tapa Roja / Azul / Verde (Trago - Cuarto - Media - Litro)","precio":0,"disponible":true,"destacado":false},
+  {"id":"li-02","tipo":"bebida","categoria":"Licores","nombre":"Whisky B&W","descripcion":"Trago y botella Whisky Black & White","precio":0,"disponible":true,"destacado":false},
+  {"id":"li-03","tipo":"bebida","categoria":"Licores","nombre":"Whisky Red Label","descripcion":"Trago y botella Whisky Johnnie Walker Red Label","precio":0,"disponible":true,"destacado":false},
+  {"id":"li-04","tipo":"bebida","categoria":"Licores","nombre":"Whisky Something Special","descripcion":"Trago y botella Whisky Something Special","precio":0,"disponible":true,"destacado":false},
+  {"id":"li-05","tipo":"bebida","categoria":"Licores","nombre":"Ron Caldas / Medellín / Esencial","descripcion":"Trago - Cuarto - Media - Litro","precio":0,"disponible":true,"destacado":false},
+  {"id":"li-06","tipo":"bebida","categoria":"Licores","nombre":"Tequila","descripcion":"Trago - Media - Botella","precio":0,"disponible":true,"destacado":false},
+  {"id":"li-07","tipo":"bebida","categoria":"Licores","nombre":"Ginebra","descripcion":"Trago individual","precio":0,"disponible":true,"destacado":false},
+  {"id":"li-08","tipo":"bebida","categoria":"Licores","nombre":"Cachaza","descripcion":"Trago individual","precio":0,"disponible":true,"destacado":false},
+  {"id":"li-09","tipo":"bebida","categoria":"Licores","nombre":"Molendero","descripcion":"Trago individual","precio":0,"disponible":true,"destacado":false},
+  {"id":"li-10","tipo":"bebida","categoria":"Licores","nombre":"Crema de Whisky o Ron","descripcion":"Trago doble y botella","precio":0,"disponible":true,"destacado":false},
+  {"id":"li-11","tipo":"bebida","categoria":"Licores","nombre":"Vodka Tradicional / Absolut","descripcion":"Trago individual","precio":0,"disponible":true,"destacado":false},
+  {"id":"li-12","tipo":"bebida","categoria":"Licores","nombre":"Vino Tinto","descripcion":"Copa y botella","precio":0,"disponible":true,"destacado":false},
+  {"id":"be-01","tipo":"bebida","categoria":"Bebidas Sin Alcohol","nombre":"Gaseosa","descripcion":"Gaseosas varias marcas","precio":0,"disponible":true,"destacado":false},
+  {"id":"be-02","tipo":"bebida","categoria":"Bebidas Sin Alcohol","nombre":"Jugo Natural","descripcion":"Jugos naturales en agua o leche","precio":0,"disponible":true,"destacado":false},
+  {"id":"be-03","tipo":"bebida","categoria":"Bebidas Sin Alcohol","nombre":"Limonada Natural","descripcion":"Limonada recién preparada","precio":0,"disponible":true,"destacado":false},
+  {"id":"be-04","tipo":"bebida","categoria":"Bebidas Sin Alcohol","nombre":"Limonada de Coco","descripcion":"Limonada cremosa de coco","precio":0,"disponible":true,"destacado":true},
+  {"id":"be-05","tipo":"bebida","categoria":"Bebidas Sin Alcohol","nombre":"Soda Michelada","descripcion":"Soda michelada con sal y limón","precio":0,"disponible":true,"destacado":false},
+  {"id":"be-06","tipo":"bebida","categoria":"Bebidas Sin Alcohol","nombre":"Gatorade","descripcion":"Bebida hidratante Gatorade","precio":0,"disponible":true,"destacado":false},
+  {"id":"be-07","tipo":"bebida","categoria":"Bebidas Sin Alcohol","nombre":"Té Hatsu","descripcion":"Té Hatsu variedad de sabores","precio":0,"disponible":true,"destacado":false},
+  {"id":"be-08","tipo":"bebida","categoria":"Bebidas Sin Alcohol","nombre":"Soda Hatsu","descripcion":"Soda saborizada Hatsu","precio":0,"disponible":true,"destacado":false},
+  {"id":"be-09","tipo":"bebida","categoria":"Bebidas Sin Alcohol","nombre":"Jugos Hit","descripcion":"Jugo embotellado Hit","precio":0,"disponible":true,"destacado":false},
+  {"id":"be-10","tipo":"bebida","categoria":"Bebidas Sin Alcohol","nombre":"Canada Dry","descripcion":"Ginger ale Canada Dry","precio":0,"disponible":true,"destacado":false},
+  {"id":"be-11","tipo":"bebida","categoria":"Bebidas Sin Alcohol","nombre":"Agua Tonic","descripcion":"Agua tónica para mezclas","precio":0,"disponible":true,"destacado":false}
+];
+
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+
+/* ------------------------------------------------------------------ */
+/*  Configuración                                                      */
+/* ------------------------------------------------------------------ */
+// Google Sheets vía OpenSheet (/1 = primera pestaña, sin depender de su nombre)
+const SHEET_URL = import.meta.env?.VITE_SHEET_URL || 'https://opensheet.elk.sh/1wwvCs-8EAWvOMZ_8r2Fpy_k5T40YCTq59Ob2MHDwJRs/1';
+const LEAVES = '/hojas_laterales.webp';
+const LS_THEME = 'sentidos:theme';
+const LS_ORDER = 'sentidos:order';
+const MAX_QTY = 20;
+
+const SECTIONS = [
+  { titulo: 'Comidas', accent: 'var(--gold)', accentText: 'var(--gold)' },
+  { titulo: 'Bebidas', accent: 'var(--leaf)', accentText: 'var(--leaf-text)' },
+];
+
+/* ------------------------------------------------------------------ */
+/*  Utilidades                                                         */
+/* ------------------------------------------------------------------ */
+const norm = (s) =>
+  String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+
+const toBool = (v, def = true) => {
+  if (typeof v === 'boolean') return v;
+  if (v === undefined || v === null || v === '') return def;
+  return ['true', '1', 'si', 'yes', 'x'].includes(norm(v));
+};
+
+const toPrice = (v) => {
+  if (typeof v === 'number') return v;
+  const n = Number(String(v ?? '').replace(/[^\d.,-]/g, '').replace(/\.(?=\d{3}\b)/g, '').replace(',', '.'));
+  return Number.isFinite(n) ? n : 0;
+};
+
+const normalizeRow = (r, i) => ({
+  id: String(r.id || `row-${i}`),
+  tipo: norm(r.tipo) === 'bebida' ? 'bebida' : 'comida',
+  categoria: String(r.categoria || 'Otros').trim(),
+  nombre: String(r.nombre || '').trim(),
+  descripcion: String(r.descripcion || '').trim(),
+  precio: toPrice(r.precio),
+  disponible: toBool(r.disponible, true),
+  destacado: toBool(r.destacado, false),
+});
+
+const formatPrice = (p) =>
+  p > 0
+    ? new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(p)
+    : 'Consultar';
+
+const readLS = (k, fallback) => {
+  try { const v = localStorage.getItem(k); return v === null ? fallback : v; } catch { return fallback; }
+};
+const writeLS = (k, v) => { try { localStorage.setItem(k, v); } catch { /* modo privado */ } };
+
+/* ------------------------------------------------------------------ */
+/*  Iconos (SVG inline, sin dependencias)                              */
+/* ------------------------------------------------------------------ */
+const Icon = ({ children, className = 'h-5 w-5', fill = 'none' }) => (
+  <svg viewBox="0 0 24 24" className={className} fill={fill} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    {children}
+  </svg>
+);
+const I = {
+  search: <Icon className="h-4 w-4"><circle cx="11" cy="11" r="6.5" /><path d="m20 20-4-4" /></Icon>,
+  left: <Icon><path d="m15 5-7 7 7 7" /></Icon>,
+  right: <Icon><path d="m9 5 7 7-7 7" /></Icon>,
+  up: <Icon><path d="m6 15 6-6 6 6" /></Icon>,
+  down: <Icon><path d="m6 9 6 6 6-6" /></Icon>,
+  sun: <Icon className="h-4 w-4"><circle cx="12" cy="12" r="4" /><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4" /></Icon>,
+  moon: <Icon className="h-4 w-4"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" /></Icon>,
+  star: <Icon className="h-3 w-3" fill="currentColor"><path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8Z" /></Icon>,
+  plus: <Icon className="h-4 w-4"><path d="M12 5v14M5 12h14" /></Icon>,
+  minus: <Icon className="h-4 w-4"><path d="M5 12h14" /></Icon>,
+  close: <Icon className="h-5 w-5"><path d="m6 6 12 12M18 6 6 18" /></Icon>,
+};
+
+/* ------------------------------------------------------------------ */
+/*  Selector de cantidad: "+" cuando no hay nada, "− n +" cuando sí     */
+/* ------------------------------------------------------------------ */
+function Stepper({ qty, onChange, accent, textColor, label, tabIndex = 0 }) {
+  const btn = 'flex h-8 w-8 items-center justify-center rounded-full transition active:scale-90';
+  if (qty === 0) {
+    return (
+      <button type="button" tabIndex={tabIndex} onClick={() => onChange(1)} aria-label={`Agregar ${label}`}
+        className={`${btn} border-2`} style={{ borderColor: accent, color: textColor }}>{I.plus}</button>
+    );
+  }
+  return (
+    <div className="flex items-center rounded-full border-2" style={{ borderColor: accent, color: textColor }}>
+      <button type="button" tabIndex={tabIndex} onClick={() => onChange(-1)} aria-label={`Quitar ${label}`} className={btn}>{I.minus}</button>
+      <span className="min-w-[1.25rem] text-center text-sm font-semibold text-ink" aria-live="polite">{qty}</span>
+      <button type="button" tabIndex={tabIndex} onClick={() => onChange(1)} disabled={qty >= MAX_QTY} aria-label={`Agregar ${label}`} className={`${btn} disabled:opacity-30`}>{I.plus}</button>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Hoja "Tu pedido": resumen para mostrar al mesero                   */
+/* ------------------------------------------------------------------ */
+function OrderSheet({ lines, total, unpriced, time, onQty, onClear, onClose }) {
+  const [confirmClear, setConfirmClear] = useState(false);
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  const groups = [
+    { titulo: 'Comidas', tipo: 'comida', accent: 'var(--gold)', text: 'var(--gold)' },
+    { titulo: 'Bebidas', tipo: 'bebida', accent: 'var(--leaf)', text: 'var(--leaf-text)' },
+  ];
+
+  return (
+    <div className="fade-up fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center" onClick={onClose}>
+      <div role="dialog" aria-modal="true" aria-label="Tu pedido" onClick={(e) => e.stopPropagation()}
+        className="flex max-h-[88dvh] w-full max-w-md flex-col rounded-t-2xl border-2 border-gold bg-surface shadow-2xl sm:rounded-2xl">
+        <div className="flex items-start justify-between gap-3 border-b border-line px-4 pb-3 pt-4">
+          <div>
+            <h2 className="font-display text-3xl font-bold leading-none text-gold">Tu pedido</h2>
+            <p className="mt-1 text-xs text-muted">Muestra esta pantalla a tu mesero · {time}</p>
+          </div>
+          <button onClick={onClose} aria-label="Cerrar" className="rounded-full p-1 text-muted hover:text-ink">{I.close}</button>
+        </div>
+
+        <div className="no-scrollbar flex-1 overflow-y-auto px-4 py-3">
+          {groups.map((g) => {
+            const rows = lines.filter((l) => l.tipo === g.tipo);
+            if (!rows.length) return null;
+            return (
+              <section key={g.tipo} className="mb-4 last:mb-0">
+                <h3 className="font-display text-xl font-bold" style={{ color: g.text }}>{g.titulo}</h3>
+                <ul className="mt-1 divide-y divide-line/40">
+                  {rows.map((l) => (
+                    <li key={l.id} className="flex items-center gap-3 py-2">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-display text-lg font-semibold leading-tight text-ink">{l.nombre}</p>
+                        <p className="text-xs text-muted">{l.precio > 0 ? `${formatPrice(l.precio)} c/u` : 'Precio por consultar'}</p>
+                      </div>
+                      <Stepper qty={l.qty} onChange={(d) => onQty(l.id, d)} accent={g.accent} textColor={g.text} label={l.nombre} />
+                      <p className="w-24 text-right font-display text-lg font-bold" style={{ color: g.text }}>
+                        {l.precio > 0 ? formatPrice(l.precio * l.qty) : '—'}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            );
+          })}
+        </div>
+
+        <div className="border-t border-line px-4 pb-4 pt-3">
+          <div className="flex items-baseline justify-between">
+            <span className="text-sm font-medium uppercase tracking-widest text-muted">Total</span>
+            <span className="font-display text-3xl font-bold text-gold">{formatPrice(total)}</span>
+          </div>
+          {unpriced > 0 && <p className="mt-1 text-right text-xs text-muted">+ {unpriced} {unpriced === 1 ? 'ítem' : 'ítems'} por consultar</p>}
+          <div className="mt-3 flex gap-2">
+            <button onClick={() => (confirmClear ? onClear() : setConfirmClear(true))} onBlur={() => setConfirmClear(false)}
+              className={`rounded-lg border px-3 py-2 text-sm ${confirmClear ? 'border-red-500 text-red-500' : 'border-line text-muted hover:text-ink'}`}>
+              {confirmClear ? '¿Vaciar todo?' : 'Vaciar'}
+            </button>
+            <button onClick={onClose} className="flex-1 rounded-lg bg-gold py-2 text-sm font-bold text-black">Seguir pidiendo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Tarjeta tipográfica (sin foto)                                     */
+/* ------------------------------------------------------------------ */
+function Card({ item, accent, accentText, index, hidden, loop, qty, onQty }) {
+  return (
+    <article
+      aria-hidden={hidden || undefined}
+      style={{ borderColor: accent, animationDelay: `${Math.min(index, 8) * 45}ms` }}
+      className={`fade-up no-scrollbar relative flex h-full w-[72vw] max-w-[17rem] shrink-0 flex-col overflow-y-auto rounded-xl border-2 bg-surface p-4 transition-transform duration-300 hover:-translate-y-0.5 sm:w-64 ${loop ? 'snap-center' : 'snap-start'}`}
+    >
+      <span className="pointer-events-none absolute left-1.5 top-1.5 h-3 w-3 border-l border-t" style={{ borderColor: accent }} />
+      <span className="pointer-events-none absolute bottom-1.5 right-1.5 h-3 w-3 border-b border-r" style={{ borderColor: accent }} />
+
+      {/* El contenido se atenúa si está agotado; el sello queda a plena opacidad */}
+      <div className={`flex flex-1 flex-col transition-opacity ${item.disponible ? '' : 'opacity-40'}`}>
+        <div className="flex min-h-[1.25rem] items-center gap-2">
+          {item.destacado && (
+            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-black" style={{ background: accent }}>
+              {I.star} Recomendado
+            </span>
+          )}
+        </div>
+        <h3 className={`mt-2 font-display font-semibold leading-tight text-ink ${item.nombre.length > 22 ? 'text-xl' : 'text-2xl'}`}>{item.nombre}</h3>
+        <div className="my-2 h-px w-10" style={{ background: accent }} />
+        <p className="flex-1 text-[13px] leading-relaxed text-body">{item.descripcion}</p>
+        {/* Precio a la derecha, con línea punteada guía como en las cartas impresas */}
+        <div className="mt-3 flex items-end gap-2">
+          {item.disponible && (
+            <Stepper qty={qty} onChange={(d) => onQty(item.id, d)} accent={accent} textColor={accentText} label={item.nombre} tabIndex={hidden ? -1 : 0} />
+          )}
+          <span className="mb-1.5 flex-1 border-b border-dotted opacity-50" style={{ borderColor: accent }} />
+          <p className="font-display text-xl font-bold" style={{ color: accentText }}>{formatPrice(item.precio)}</p>
+        </div>
+      </div>
+      {!item.disponible && (
+        <span aria-label="Agotado" className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-12 rounded-md border-2 border-red-500 bg-bg/70 px-3 py-1 font-sans text-sm font-bold uppercase tracking-[0.25em] text-red-500">Agotado</span>
+      )}
+    </article>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Sección con pills, dropdown y carrusel                             */
+/* ------------------------------------------------------------------ */
+function Section({ titulo, accent, accentText, items, allItems, query, qtys, onQty }) {
+  const categorias = useMemo(() => ['Todas', ...new Set(allItems.map((i) => i.categoria))], [allItems]);
+  const [cat, setCat] = useState('Todas');
+  const scroller = useRef(null);
+  const [boxW, setBoxW] = useState(0);
+
+  const visible = useMemo(() => (cat === 'Todas' ? items : items.filter((i) => i.categoria === cat)), [items, cat]);
+  const n = visible.length;
+
+  // Ancho aproximado de tarjeta + separación, para decidir si hay que repetir
+  const slot = boxW && boxW < 640 ? Math.min(boxW * 0.72, 272) + 12 : 256 + 12;
+  const loop = n > 1 && n * slot > boxW * 1.05;
+  const copies = !loop ? 1 : n >= 6 ? 3 : n >= 3 ? 5 : 7;
+  const mid = Math.floor(copies / 2);
+
+  useEffect(() => {
+    const el = scroller.current; if (!el) return undefined;
+    const ro = new ResizeObserver(() => setBoxW(el.clientWidth));
+    ro.observe(el); setBoxW(el.clientWidth);
+    return () => ro.disconnect();
+  }, []);
+
+  // Ancho real de un "juego" completo de tarjetas
+  const setWidth = () => {
+    const cards = scroller.current?.children;
+    if (!cards || cards.length < n * 2) return 0;
+    return cards[n].offsetLeft - cards[0].offsetLeft;
+  };
+
+  // Al cambiar categoría/búsqueda/repeticiones: centrar la primera tarjeta de la copia central
+  useLayoutEffect(() => {
+    const el = scroller.current; if (!el || n === 0) return;
+    const first = el.children[mid * n];
+    if (!first) return;
+    el.style.scrollBehavior = 'auto';
+    el.scrollLeft = loop ? first.offsetLeft - (el.clientWidth - first.offsetWidth) / 2 : 0;
+    el.style.scrollBehavior = '';
+  }, [cat, query, n, loop, mid]);
+
+  // Al quedar quieto, volver a la copia central (mismo punto visual => salto invisible)
+  const idle = useRef(null);
+  const onScroll = () => {
+    if (!loop) return;
+    clearTimeout(idle.current);
+    idle.current = setTimeout(() => {
+      const el = scroller.current; const w = setWidth();
+      if (!el || !w) return;
+      const s = el.scrollLeft;
+      const target = (((s % w) + w) % w) + mid * w;
+      if (Math.abs(target - s) > 1) {
+        el.style.scrollBehavior = 'auto';
+        el.scrollLeft = target;
+        el.style.scrollBehavior = '';
+      }
+    }, 140);
+  };
+  useEffect(() => () => clearTimeout(idle.current), []);
+
+  const go = (dir) => {
+    const el = scroller.current; if (!el) return;
+    const step = el.children[0] ? el.children[0].offsetWidth + 12 : 240;
+    el.scrollBy({ left: dir * step, behavior: 'smooth' });
+  };
+
+  const pill = (active) =>
+    `shrink-0 whitespace-nowrap rounded-full border px-3 py-0.5 text-xs font-medium transition-colors duration-200 ${active ? 'text-black' : 'border-line text-muted hover:text-ink'}`;
+
+  return (
+    <section className="flex h-full min-h-0 flex-col px-3 pb-2 pt-2 sm:px-6" aria-label={titulo}>
+      <div className="flex items-center gap-3">
+        <h2 className="font-display text-2xl font-bold tracking-wide sm:text-3xl" style={{ color: accentText }}>{titulo}</h2>
+        <span className="h-px flex-1" style={{ background: `linear-gradient(90deg, ${accent}, transparent)` }} />
+      </div>
+
+      {/* Chips de categoría: una fila con scroll horizontal, también en celular */}
+      <div className="no-scrollbar -mx-3 mt-1.5 flex gap-1.5 overflow-x-auto px-3 sm:-mx-6 sm:px-6" role="tablist">
+        {categorias.map((c) => (
+          <button key={c} role="tab" aria-selected={cat === c}
+            onClick={(e) => { setCat(c); e.currentTarget.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' }); }}
+            className={pill(cat === c)} style={cat === c ? { background: accent, borderColor: accent } : undefined}>{c}</button>
+        ))}
+      </div>
+
+      <div className="relative mt-2 min-h-0 flex-1">
+        {n === 0 && <p className="absolute inset-0 flex items-center justify-center text-sm text-muted">Sin resultados en {titulo.toLowerCase()}.</p>}
+        <div ref={scroller} onScroll={onScroll}
+          className={`no-scrollbar flex h-full gap-3 overflow-x-auto scroll-smooth pb-1 ${loop ? 'snap-x snap-mandatory' : 'snap-x snap-proximity'} ${n === 0 ? 'invisible' : ''}`}>
+          {Array.from({ length: copies }).flatMap((_, c) =>
+            visible.map((it, i) => (
+              <Card key={`${it.id}-${c}`} item={it} index={i} accent={accent} accentText={accentText} hidden={c !== mid} loop={loop} qty={qtys[it.id] || 0} onQty={onQty} />
+            )))}
+        </div>
+        {loop && (
+          <>
+            <button onClick={() => go(-1)} aria-label="Anterior"
+              className="absolute left-0 top-1/2 z-10 -translate-y-1/2 rounded-full border bg-bg/90 p-1.5 backdrop-blur transition hover:scale-110 [@media(hover:none)]:hidden" style={{ color: accentText, borderColor: accent }}>{I.left}</button>
+            <button onClick={() => go(1)} aria-label="Siguiente"
+              className="absolute right-0 top-1/2 z-10 -translate-y-1/2 rounded-full border bg-bg/90 p-1.5 backdrop-blur transition hover:scale-110 [@media(hover:none)]:hidden" style={{ color: accentText, borderColor: accent }}>{I.right}</button>
+          </>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Componente principal                                               */
+/* ------------------------------------------------------------------ */
+export default function MenuSentidos() {
+  const [base, setBase] = useState(INITIAL_DATA);
+  const [theme, setTheme] = useState(() => readLS(LS_THEME, 'night'));
+  const [query, setQuery] = useState('');
+  const [ratio, setRatio] = useState(0.5);
+  const [dragging, setDragging] = useState(false);
+  const split = useRef(null);
+
+  // Petición dinámica a Google Sheets (OpenSheet); si falla, queda INITIAL_DATA
+  useEffect(() => {
+    if (!SHEET_URL) return undefined;
+    const ctrl = new AbortController();
+    fetch(SHEET_URL, { signal: ctrl.signal })
+      .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then((rows) => {
+        const parsed = rows.map(normalizeRow).filter((r) => r.nombre);
+        if (parsed.length) setBase(parsed);
+      })
+      .catch(() => { /* fallback local */ });
+    return () => ctrl.abort();
+  }, []);
+
+  useEffect(() => {
+    writeLS(LS_THEME, theme);
+    // color-scheme en <html>: evita que el navegador fuerce oscurecer el modo día
+    document.documentElement.style.colorScheme = theme === 'day' ? 'light' : 'dark';
+    document.documentElement.style.backgroundColor = theme === 'day' ? '#F7F2E6' : '#050806';
+    document.querySelector('meta[name=theme-color]')?.setAttribute('content', theme === 'day' ? '#F7F2E6' : '#050806');
+  }, [theme]);
+
+  const data = base;
+
+  /* Pedido (solo para mostrar al mesero; se guarda en este dispositivo) */
+  const [order, setOrder] = useState(() => {
+    try { return JSON.parse(readLS(LS_ORDER, '{}')) || {}; } catch { return {}; }
+  });
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [orderTime, setOrderTime] = useState('');
+  useEffect(() => { writeLS(LS_ORDER, JSON.stringify(order)); }, [order]);
+
+  const onQty = useCallback((id, delta) => setOrder((o) => {
+    const q = Math.max(0, Math.min(MAX_QTY, (o[id] || 0) + delta));
+    const next = { ...o };
+    if (q) next[id] = q; else delete next[id];
+    return next;
+  }), []);
+
+  // Solo cuentan los platos que siguen existiendo y disponibles en la hoja
+  const lines = useMemo(() => data.filter((d) => d.disponible && order[d.id] > 0).map((d) => ({ ...d, qty: order[d.id] })), [data, order]);
+  const count = lines.reduce((n, l) => n + l.qty, 0);
+  const total = lines.reduce((t, l) => t + l.precio * l.qty, 0);
+  const unpriced = lines.filter((l) => l.precio <= 0).length;
+
+  const openSheet = () => {
+    setOrderTime(new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }));
+    setSheetOpen(true);
+  };
+  useEffect(() => { if (count === 0) setSheetOpen(false); }, [count]);
+
+  const q = norm(query);
+  const filtered = useMemo(
+    () => (q ? data.filter((d) => norm(`${d.nombre} ${d.descripcion} ${d.categoria}`).includes(q)) : data),
+    [data, q],
+  );
+  const comidas = useMemo(() => filtered.filter((d) => d.tipo === 'comida'), [filtered]);
+  const bebidas = useMemo(() => filtered.filter((d) => d.tipo === 'bebida'), [filtered]);
+  const allComidas = useMemo(() => data.filter((d) => d.tipo === 'comida'), [data]);
+  const allBebidas = useMemo(() => data.filter((d) => d.tipo === 'bebida'), [data]);
+
+  /* Divisor redimensionable (drag + tap en flechas + teclado) */
+  const clamp = (v) => Math.min(0.85, Math.max(0.15, v));
+  const onPointerDown = (e) => { e.currentTarget.setPointerCapture(e.pointerId); setDragging(true); };
+  const onPointerMove = (e) => {
+    if (!dragging) return;
+    const r = split.current?.getBoundingClientRect();
+    if (r) setRatio(clamp((e.clientY - r.top) / r.height));
+  };
+  const onPointerUp = () => setDragging(false);
+  const nudge = (d) => setRatio((r) => clamp(r + d));
+  const onKey = (e) => {
+    if (e.key === 'ArrowUp') { e.preventDefault(); nudge(-0.05); }
+    if (e.key === 'ArrowDown') { e.preventDefault(); nudge(0.05); }
+  };
+
+  return (
+    <div data-theme={theme} className="relative flex h-full flex-col overflow-hidden bg-bg font-sans text-ink transition-colors duration-500">
+      {/* ---------- Cabecera fija ---------- */}
+      <header className="relative z-20 shrink-0 border-b border-line">
+        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+          <img src={LEAVES} alt="" className="sway absolute -top-2 left-0 w-[150%] max-w-none opacity-70 sm:w-2/3" />
+          <img src={LEAVES} alt="" className="sway absolute -top-2 right-0 w-[150%] max-w-none -scale-x-100 opacity-70 sm:w-2/3" />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(var(--veil),.15), rgba(var(--veil),.92))' }} />
+        </div>
+        <div className="relative px-3 pb-2 pt-2 sm:px-6">
+          <div className="flex items-center gap-2">
+            <span className="w-7" aria-hidden />
+            <h1 className="flex-1 text-center font-display text-2xl font-bold leading-none tracking-wide text-gold sm:text-4xl">
+              Sentidos
+              <span className="block font-sans text-[9px] font-medium uppercase tracking-[0.35em] text-ink sm:text-xs">restaurante-bar</span>
+            </h1>
+            <button onClick={() => setTheme((t) => (t === 'night' ? 'day' : 'night'))} role="switch" aria-checked={theme === 'night'} aria-label="Alternar modo noche / día"
+              className="relative flex h-7 w-14 items-center rounded-full border border-gold bg-surface/80 px-1 transition">
+              <span className="absolute left-1.5 text-gold">{I.sun}</span>
+              <span className="absolute right-1.5 text-gold">{I.moon}</span>
+              <span className={`z-10 h-5 w-5 rounded-full bg-gold shadow transition-transform duration-300 ${theme === 'night' ? 'translate-x-7' : 'translate-x-0'}`} />
+            </button>
+          </div>
+          <label className="relative mx-auto mt-2 block max-w-xl">
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">{I.search}</span>
+            <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar plato o bebida…"
+              className="w-full rounded-full border border-line bg-surface/90 py-1.5 pl-9 pr-3 text-sm text-ink outline-none transition focus:border-gold" />
+          </label>
+        </div>
+      </header>
+
+      {/* ---------- Pantalla dividida ---------- */}
+      <main ref={split} className="relative flex min-h-0 flex-1 flex-col">
+        <div className={`min-h-0 shrink-0 overflow-hidden ${dragging ? '' : 'transition-[height] duration-300 ease-out'}`} style={{ height: `${ratio * 100}%` }}>
+          <Section {...SECTIONS[0]} allItems={allComidas} items={comidas} query={q} qtys={order} onQty={onQty} />
+        </div>
+
+        <div role="separator" aria-orientation="horizontal" aria-valuenow={Math.round(ratio * 100)} aria-valuemin={15} aria-valuemax={85} tabIndex={0}
+          onKeyDown={onKey} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}
+          className="relative z-10 flex h-9 shrink-0 cursor-row-resize touch-none select-none items-center justify-center border-y border-line bg-surface outline-none focus-visible:border-gold">
+          <button onClick={() => nudge(-0.15)} onPointerDown={(e) => e.stopPropagation()} aria-label="Subir divisor" className="px-4 py-2 text-gold transition hover:scale-125">{I.up}</button>
+          {count > 0 ? (
+            <button key={count} onClick={openSheet} onPointerDown={(e) => e.stopPropagation()} aria-label={`Ver pedido, ${count} ítems`}
+              className="pop h-7 whitespace-nowrap rounded-full bg-gold px-4 text-xs font-bold text-black shadow-[0_0_14px_rgba(223,180,87,.55)] transition active:scale-95">
+              Listo · {count}{total > 0 ? ` · ${formatPrice(total)}` : ''}
+            </button>
+          ) : (
+            <span className="h-1.5 w-16 rounded-full bg-gradient-to-r from-gold via-line to-leaf" />
+          )}
+          <button onClick={() => nudge(0.15)} onPointerDown={(e) => e.stopPropagation()} aria-label="Bajar divisor" className="px-4 py-2 text-leaf transition hover:scale-125">{I.down}</button>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-hidden">
+          <Section {...SECTIONS[1]} allItems={allBebidas} items={bebidas} query={q} qtys={order} onQty={onQty} />
+        </div>
+      </main>
+
+      {sheetOpen && count > 0 && (
+        <OrderSheet lines={lines} total={total} unpriced={unpriced} time={orderTime} onQty={onQty}
+          onClear={() => { setOrder({}); setSheetOpen(false); }} onClose={() => setSheetOpen(false)} />
+      )}
+
+    </div>
+  );
+}

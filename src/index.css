@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root { height: 100%; height: 100dvh; }
+body { margin: 0; overflow: hidden; font-family: 'Montserrat', system-ui, sans-serif; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.fade-up { animation: fadeUp .45s ease both; }
+@keyframes sway { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(1.2deg); } }
+.sway { animation: sway 9s ease-in-out infinite; transform-origin: top center; }
+@media (prefers-reduced-motion: reduce) { .fade-up, .sway { animation: none; } }
+
+/* Paleta de marca: noche por defecto, día como alternativa */
+:root, [data-theme='night'] {
+  --bg: #050806; --surface: #070C09; --ink: #F3EBDD; --body: #BFC3CA; --muted: #777B84; --line: #566231;
+  --gold: #DFB457; --leaf: #1CC658; --leaf-text: #4BE47F; --veil: 5,8,6;
+}
+[data-theme='day'] {
+  --bg: #F7F2E6; --surface: #FFFDF7; --ink: #1B2118; --body: #3F454D; --muted: #5E636B; --line: #A9B27C;
+  --gold: #9C7418; --leaf: #0E8A3E; --leaf-text: #0E8A3E; --veil: 247,242,230;
+}
+
+/* Declarar el esquema evita que el navegador fuerce un modo oscuro automático sobre el modo día */
+:root { color-scheme: dark; }
+[data-theme='night'] { color-scheme: dark; }
+[data-theme='day'] { color-scheme: light; }
+
+@keyframes pop { 0% { transform: scale(.85); } 60% { transform: scale(1.08); } 100% { transform: scale(1); } }
+.pop { animation: pop .3s ease both; }
+@media (prefers-reduced-motion: reduce) { .pop { animation: none; } }
