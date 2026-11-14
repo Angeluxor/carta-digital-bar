@@ -9,6 +9,7 @@ Los datos salen de una hoja de Google Sheets, así que el personal actualiza pre
 - **Carrusel infinito** por sección, con tarjetas centradas y chips de categoría.
 - **Modo noche / día** (noche por defecto).
 - **Tarjetas tipográficas** con insignia "Recomendado" y sello "Agotado".
+- **Opciones por producto** (salsa, presentación, sabor) con botones dentro de la tarjeta; cada opción puede tener su propio precio.
 - **Pedido para mostrar al mesero:** botones `+ / −` en cada tarjeta, botón central **Listo** y hoja "Tu pedido" con cantidades y total.
   El pedido vive en el dispositivo y no se envía a ningún lado.
 - **Datos de respaldo** (`INITIAL_DATA`) si la hoja no responde.
@@ -17,15 +18,28 @@ Los datos salen de una hoja de Google Sheets, así que el personal actualiza pre
 
 Primera pestaña de la hoja, con estas columnas en la fila 1:
 
-| id | tipo | categoria | nombre | descripcion | precio | disponible | destacado |
-|:---|:---|:---|:---|:---|:---|:---|:---|
-| pf-01 | comida | Platos Fuertes | Res al vino | 250 gr de res… | 28000 | TRUE | TRUE |
-| co-01 | bebida | Coctelería | Caipiriña | Cachaza, limón y azúcar | 18000 | TRUE | FALSE |
+| id | tipo | categoria | nombre | descripcion | precio | disponible | destacado | opciones |
+|:---|:---|:---|:---|:---|:---|:---|:---|:---|
+| pf-01 | comida | Platos Fuertes | Res | 250 g de res | 28000 | TRUE | TRUE | `Al vino: en reducción de hogao… \| Chimichurri` |
+| co-01 | bebida | Coctelería | Caipirinha | Cachaza, limón y azúcar | 18000 | TRUE | FALSE | |
 
 - `tipo`: `comida` o `bebida`.
 - `disponible`: `FALSE` muestra el sello "Agotado" y quita el botón para agregar.
 - `destacado`: `TRUE` muestra la insignia "Recomendado".
 - `precio` en `0` (o vacío) se muestra como "Consultar".
+- `opciones` (columna opcional, puede ir al final): opciones para elegir dentro de la tarjeta, separadas por `|`.
+  Cada opción es `Etiqueta[=precio][: descripción]`. El precio y la descripción son opcionales.
+
+  | nombre | descripcion | opciones |
+  |:---|:---|:---|
+  | Cerdo | 250 g de cerdo asado | `BBQ: con queso mozzarella y salsa BBQ \| Chimichurri \| Criolla` |
+  | Club Colombia | Cerveza nacional | `Dorada \| Roja \| Negra` |
+  | Aguardiente | Tapa roja, azul o verde | `Trago=8000 \| Media=45000 \| Botella=85000: 750 ml` |
+
+  - Sin precio propio, la opción toma el `precio` del producto.
+  - La descripción de la opción elegida se agrega al final de la descripción del producto.
+  - En "Tu pedido" cada combinación sale en su propia línea (por ejemplo, "Cerdo · Criolla").
+  - Celda vacía: la tarjeta funciona igual que siempre, sin opciones.
 
 La hoja debe estar compartida como **"Cualquier persona con el enlace puede ver"**.
 Se lee con [OpenSheet](https://github.com/benborgers/opensheet) usando la **primera pestaña** (`/1`), sin importar su nombre.

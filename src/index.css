@@ -39,3 +39,4 @@ body { margin: 0; overflow: hidden; overscroll-behavior: none; font-family: 'Mon
 [data-text='lg'] .desc { font-size: 1.1875rem; }
 [data-text='lg'] .price { font-size: 1.75rem; }
 [data-text='lg'] .pill-cat { font-size: 0.9375rem; padding: 0.25rem 0.85rem; }
+[data-text='lg'] .opt { font-size: 0.9375rem; padding: 0.4rem 0.85rem; }

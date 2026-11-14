@@ -6,7 +6,7 @@ Estado del producto y evolutivos acordados. Este documento es la fuente de verda
 
 - SPA React + Tailwind (`src/MenuSentidos.jsx`), mobile-first, lista para Vercel/Netlify.
 - Datos desde Google Sheets vía OpenSheet (`/<ID_HOJA>/1`, primera pestaña), con respaldo local `INITIAL_DATA`.
-  Columnas: `id, tipo, categoria, nombre, descripcion, precio, disponible, destacado`.
+  Columnas: `id, tipo, categoria, nombre, descripcion, precio, disponible, destacado` y `opciones` (opcional).
 - Pantalla dividida Comidas / Bebidas con divisor redimensionable (arrastre, flechas ^ v y teclado).
 - Carrusel infinito por sección, tarjetas centradas y chips de categoría.
 - Modo noche / día (el modo día aún no está verificado visualmente en un navegador sin oscurecimiento forzado).
@@ -14,6 +14,8 @@ Estado del producto y evolutivos acordados. Este documento es la fuente de verda
 - **Pedido "solo mostrar"**: botones `+ / −` en cada tarjeta, botón central **"Listo · n · total"** sobre el divisor
   y hoja "Tu pedido" (resumen con cantidades, total y hora) para mostrarla al mesero. Se guarda en el dispositivo (localStorage).
   No se envía a ningún lado.
+- **Opciones por producto**: columna `opciones` (`Etiqueta[=precio][: descripción]`, separadas por `|`).
+  Botones dentro de la tarjeta; cada combinación es una línea propia del pedido ("Cerdo · Criolla").
 
 ## Evolutivo 1 · Enviar el pedido por WhatsApp
 
