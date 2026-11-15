@@ -168,6 +168,8 @@ const normalizeRow = (r, i) => {
     nombre: String(r.nombre || '').trim(),
     descripcion: String(r.descripcion || '').trim(),
     precio,
+    // Texto en la celda de precio ("Según marca") se muestra tal cual en lugar de "Consultar"
+    precioTexto: precio > 0 || /\d/.test(String(r.precio ?? '')) ? '' : String(r.precio ?? '').trim(),
     opciones: parseOptions(r.opciones ?? r.Opciones, precio),
     extras: parseExtras(r.extras ?? r.Extras),
     // "tabla": las opciones se muestran como lista de precios (licores: trago, media, botella…)
@@ -271,7 +273,7 @@ function OrderSheet({ lines, total, unpriced, time, onQty, onClear, onClose }) {
                           {l.nombre}
                           {l.opcion && <span style={{ color: g.text }}> · {l.opcion}</span>}
                         </p>
-                        <p className="text-xs text-muted">{l.precio > 0 ? `${formatPrice(l.precio)} c/u` : 'Precio por consultar'}</p>
+                        <p className="text-xs text-muted">{l.precio > 0 ? `${formatPrice(l.precio)} c/u` : `Precio: ${(l.precioTexto || 'por consultar').toLowerCase()}`}</p>
                       </div>
                       <Stepper qty={l.qty} onChange={(d) => onQty(l.key, d)} accent={g.accent} textColor={g.text} label={l.opcion ? `${l.nombre} ${l.opcion}` : l.nombre} />
                       <p className="w-24 text-right font-display text-lg font-bold" style={{ color: g.text }}>
@@ -435,7 +437,7 @@ function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel,
             <Stepper qty={qty} onChange={(d) => onQty(key, d)} accent={accent} textColor={accentText} label={label} tabIndex={hidden ? -1 : 0} />
           )}
           <span className="mb-1.5 flex-1 border-b border-dotted opacity-50" style={{ borderColor: accent }} />
-          <p className="price font-display text-xl font-bold" style={{ color: accentText }}>{formatPrice(precio)}</p>
+          <p className="price font-display text-xl font-bold" style={{ color: accentText }}>{precio > 0 ? formatPrice(precio) : (item.precioTexto || formatPrice(precio))}</p>
         </div>
       </div>
       {!item.disponible && (

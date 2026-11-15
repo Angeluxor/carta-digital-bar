@@ -27,6 +27,7 @@ Primera pestaña de la hoja, con estas columnas en la fila 1:
 - `disponible`: `FALSE` muestra el sello "Agotado" y quita el botón para agregar.
 - `destacado`: `TRUE` muestra la insignia "Recomendado".
 - `precio` en `0` (o vacío) se muestra como "Consultar".
+  Si la celda tiene texto (por ejemplo `Según marca`), se muestra ese texto en lugar de "Consultar".
 - `opciones` (columna opcional, puede ir al final): opciones para elegir dentro de la tarjeta, separadas por `|`.
   Cada opción es `Etiqueta[=precio][: descripción]`. El precio y la descripción son opcionales.
 
