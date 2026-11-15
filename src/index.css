@@ -40,3 +40,10 @@ body { margin: 0; overflow: hidden; overscroll-behavior: none; font-family: 'Mon
 [data-text='lg'] .price { font-size: 1.75rem; }
 [data-text='lg'] .pill-cat { font-size: 0.9375rem; padding: 0.25rem 0.85rem; }
 [data-text='lg'] .opt { font-size: 0.9375rem; padding: 0.4rem 0.85rem; }
+
+/* Arabesco provisional: el contenedor mide el espacio libre de la tarjeta; si es poco, no se dibuja */
+.arabesque-box { container-type: size; }
+/* Alto: medallón. Bajo: cenefa horizontal. Muy bajo: nada */
+.flourish { display: none; }
+@container (max-height: 88px) { .arabesque { display: none; } .flourish { display: block; } }
+@container (max-height: 28px) { .flourish { display: none; } }

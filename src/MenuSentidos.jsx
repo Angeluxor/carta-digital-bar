@@ -309,6 +309,50 @@ function OrderSheet({ lines, total, unpriced, time, onQty, onClear, onClose }) {
 /* ------------------------------------------------------------------ */
 /*  Tarjeta tipográfica (sin foto)                                     */
 /* ------------------------------------------------------------------ */
+/* ------------------------------------------------------------------ */
+/*  Arabesco (provisional): medallón de volutas simétricas en SVG      */
+/* ------------------------------------------------------------------ */
+// Una voluta: sale del centro, se abre y termina en espiral
+const SCROLL = 'M0 -9 C 5 -17, 16 -19, 20 -29 C 23 -37, 16 -43, 10 -39 C 6 -36, 8 -30, 13 -31';
+const LEAF = 'M0 -12 C 3 -18, 3 -24, 0 -30 C -3 -24, -3 -18, 0 -12 Z';
+function Arabesque({ color }) {
+  const arms = [0, 90, 180, 270];
+  return (
+    <svg viewBox="-50 -50 100 100" className="arabesque h-full max-h-32 w-auto max-w-full opacity-30" style={{ color }}
+      fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round">
+      {arms.map((a) => (
+        <g key={a} transform={`rotate(${a})`}>
+          <path d={SCROLL} />
+          <path d={SCROLL} transform="scale(-1,1)" />
+          <path d={LEAF} transform="rotate(45)" fill="currentColor" fillOpacity="0.35" />
+          <circle cx="0" cy="-42" r="1.6" fill="currentColor" stroke="none" />
+        </g>
+      ))}
+      <circle r="6" />
+      <path d="M0 -3.5 L3.5 0 L0 3.5 L-3.5 0 Z" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+// Cenefa horizontal para espacios bajos (donde el medallón quedaría diminuto)
+const CURL = 'M9 0 C 15 -9, 27 -9, 29 -2 C 31 4, 24 7, 21 2';
+function Flourish({ color }) {
+  return (
+    <svg viewBox="-100 -14 200 28" className="flourish w-3/4 max-w-[13rem] opacity-30" style={{ color }}
+      fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round">
+      {[1, -1].map((d) => (
+        <g key={d} transform={`scale(${d},1)`}>
+          <path d={CURL} />
+          <path d={CURL} transform="scale(1,-1)" />
+          <path d="M31 0 H 92" />
+          <circle cx="96" cy="0" r="1.6" fill="currentColor" stroke="none" />
+        </g>
+      ))}
+      <path d="M0 -5 L5 0 L0 5 L-5 0 Z" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel, selX, onSel }) {
   const opts = item.opciones;
   const xs = item.extras;
@@ -343,7 +387,7 @@ function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel,
         </div>
         <h3 className={`mt-2 font-display font-bold leading-[1.05] tracking-tight text-ink ${item.nombre.length > 22 ? 'text-[1.7rem]' : 'text-[2rem]'}`}>{item.nombre}</h3>
         <div className="my-2.5 h-0.5 w-12 rounded-full" style={{ background: accent }} />
-        <div className="flex-1">
+        <div className="flex min-h-0 flex-1 flex-col">
           {(item.descripcion || descs) && (
             <p className="desc text-body">
               {item.descripcion}
@@ -430,6 +474,13 @@ function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel,
             </div>
           )}
           </>)}
+          {/* Arabesco provisional: ocupa el espacio que sobra; en tarjetas llenas se encoge hasta desaparecer */}
+          <div aria-hidden="true" className="arabesque-box pointer-events-none relative min-h-0 flex-1">
+            <div className="absolute inset-0 flex items-center justify-center py-1">
+              <Arabesque color={accent} />
+              <Flourish color={accent} />
+            </div>
+          </div>
         </div>
         {/* Precio a la derecha, con línea punteada guía como en las cartas impresas */}
         <div className="mt-3 flex items-end gap-2">
