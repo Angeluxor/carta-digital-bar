@@ -50,6 +50,9 @@ Primera pestaña de la hoja, con estas columnas en la fila 1:
   - En "Tu pedido" sale como "Club Colombia · Trigo · Michelada Tabasco".
   - Si el producto no tiene precio ("Consultar"), el extra no suma nada.
 
+La carta vuelve a leer la hoja cada minuto y cada vez que se vuelve a ella desde otra app, así que los cambios aparecen sin recargar
+(OpenSheet puede tardar unos segundos extra por su caché).
+
 La hoja debe estar compartida como **"Cualquier persona con el enlace puede ver"**.
 Se lee con [OpenSheet](https://github.com/benborgers/opensheet) usando la **primera pestaña** (`/1`), sin importar su nombre.
 Los cambios pueden tardar un par de minutos en verse por el caché de OpenSheet.

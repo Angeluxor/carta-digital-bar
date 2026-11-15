@@ -74,6 +74,8 @@ import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useSta
 /* ------------------------------------------------------------------ */
 // Google Sheets vía OpenSheet (/1 = primera pestaña, sin depender de su nombre)
 const SHEET_URL = import.meta.env?.VITE_SHEET_URL || 'https://opensheet.elk.sh/1wwvCs-8EAWvOMZ_8r2Fpy_k5T40YCTq59Ob2MHDwJRs/1';
+const SHEET_REFRESH = 60_000; // recarga automática de la hoja (ms)
+const SHEET_MIN_GAP = 10_000; // al volver a la pestaña, no recargar si se leyó hace menos de esto
 const LEAVES = '/hojas_laterales.webp';
 const LS_THEME = 'sentidos:theme';
 const LS_TEXT = 'sentidos:text';
@@ -519,17 +521,39 @@ export default function MenuSentidos() {
   const split = useRef(null);
 
   // Petición dinámica a Google Sheets (OpenSheet); si falla, queda INITIAL_DATA
+  // Lee la hoja al abrir, cada minuto mientras la carta está visible y al volver a la pestaña.
+  // Solo actualiza si algo cambió, para no reiniciar carruseles ni selecciones sin motivo.
   useEffect(() => {
     if (!SHEET_URL) return undefined;
-    const ctrl = new AbortController();
-    fetch(SHEET_URL, { signal: ctrl.signal })
-      .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then((rows) => {
-        const parsed = rows.map(normalizeRow).filter((r) => r.nombre);
-        if (parsed.length) setBase(parsed);
-      })
-      .catch(() => { /* fallback local */ });
-    return () => ctrl.abort();
+    let ctrl = null;
+    let last = '';
+    let lastAt = 0;
+    const load = () => {
+      if (document.hidden) return;
+      ctrl?.abort();
+      ctrl = new AbortController();
+      lastAt = Date.now();
+      fetch(SHEET_URL, { signal: ctrl.signal, cache: 'no-store' })
+        .then((r) => { if (!r.ok) throw new Error(r.status); return r.text(); })
+        .then((txt) => {
+          if (txt === last) return;
+          const parsed = JSON.parse(txt).map(normalizeRow).filter((r) => r.nombre);
+          if (parsed.length) { last = txt; setBase(parsed); }
+        })
+        .catch(() => { /* se queda con los últimos datos (o el respaldo local) */ });
+    };
+    // Al volver a la carta (otra app, pantalla bloqueada) recarga si pasaron más de 10 s
+    const onVisible = () => { if (!document.hidden && Date.now() - lastAt > SHEET_MIN_GAP) load(); };
+    load();
+    const t = setInterval(load, SHEET_REFRESH);
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onVisible);
+    return () => {
+      ctrl?.abort();
+      clearInterval(t);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onVisible);
+    };
   }, []);
 
   useEffect(() => {
