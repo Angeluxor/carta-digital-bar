@@ -353,7 +353,15 @@ function Flourish({ color }) {
   );
 }
 
-function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel, selX, onSel }) {
+function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel, selX, onSel, onNeedSpace }) {
+  // Si al tocar la tarjeta su contenido no cabe, pide más alto a la pantalla dividida
+  const ref = useRef(null);
+  const checkFit = () => requestAnimationFrame(() => requestAnimationFrame(() => {
+    const el = ref.current;
+    if (!el || !onNeedSpace) return;
+    const extra = el.scrollHeight - el.clientHeight;
+    if (extra > 2) onNeedSpace(extra + 8);
+  }));
   const opts = item.opciones;
   const xs = item.extras;
   const cur = opts.length ? (opts.find((o) => o.label === sel) || opts[0]) : null;
@@ -369,6 +377,8 @@ function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel,
   const descs = [cur?.desc, curX?.desc].filter(Boolean).join(', ');
   return (
     <article
+      ref={ref}
+      onClick={checkFit}
       aria-hidden={hidden || undefined}
       style={{ borderColor: accent, animationDelay: `${Math.min(index, 8) * 45}ms` }}
       className={`fade-up no-scrollbar touch-pan-x relative flex h-full w-[72vw] max-w-[17rem] shrink-0 flex-col overflow-y-auto rounded-xl border-2 bg-surface p-4 transition-transform duration-300 hover:-translate-y-0.5 sm:w-64 ${loop ? 'snap-center' : 'snap-start'}`}
@@ -417,14 +427,14 @@ function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel,
           )}
           {/* Vista "tabla": cada presentación es una fila con su precio; se toca para elegirla */}
           {cur && item.vista === 'tabla' && (
-            <div role="radiogroup" aria-label={`Presentaciones de ${item.nombre}`} className="mt-2.5 flex flex-col gap-0.5">
+            <div role="radiogroup" aria-label={`Presentaciones de ${item.nombre}`} className="mt-2 flex flex-col">
               {opts.map((o) => {
                 const on = o.label === cur.label;
                 const n = countOpt(o);
                 return (
                   <button key={o.label} type="button" role="radio" aria-checked={on} tabIndex={hidden ? -1 : 0}
                     disabled={!item.disponible} onClick={() => onSel(item.id, o.label)}
-                    className={`opt flex items-baseline gap-2 rounded-md px-2 py-1 text-left text-sm transition active:scale-[.98] ${on ? 'font-semibold text-black' : 'text-ink'}`}
+                    className={`opt flex items-baseline gap-2 rounded-md px-2 py-0.5 text-left text-sm transition active:scale-[.98] ${on ? 'font-semibold text-black' : 'text-ink'}`}
                     style={on ? { background: accent } : undefined}>
                     <span>{o.label}{n > 0 && <span className={on ? '' : 'opacity-70'}> · {n}</span>}</span>
                     <span className={`mb-1 flex-1 border-b border-dotted ${on ? 'border-black/40' : 'opacity-40'}`} style={on ? undefined : { borderColor: accent }} />
@@ -501,7 +511,7 @@ function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel,
 /* ------------------------------------------------------------------ */
 /*  Sección con pills, dropdown y carrusel                             */
 /* ------------------------------------------------------------------ */
-function Section({ titulo, accent, accentText, items, qtys, onQty, sel, onSel }) {
+function Section({ titulo, accent, accentText, items, qtys, onQty, sel, onSel, onNeedSpace }) {
   const categorias = useMemo(() => ['Todas', ...new Set(items.map((i) => i.categoria))], [items]);
   const [cat, setCat] = useState('Todas');
   const scroller = useRef(null);
@@ -590,7 +600,7 @@ function Section({ titulo, accent, accentText, items, qtys, onQty, sel, onSel })
           className={`no-scrollbar touch-pan-x flex h-full gap-3 overflow-x-auto scroll-smooth pb-1 ${loop ? 'snap-x snap-mandatory' : 'snap-x snap-proximity'} ${n === 0 ? 'invisible' : ''}`}>
           {Array.from({ length: copies }).flatMap((_, c) =>
             visible.map((it, i) => (
-              <Card key={`${it.id}-${c}`} item={it} index={i} accent={accent} accentText={accentText} hidden={c !== mid} loop={loop} qtys={qtys} onQty={onQty} sel={sel[it.id]} selX={sel[`${it.id}#x`]} onSel={onSel} />
+              <Card key={`${it.id}-${c}`} item={it} index={i} accent={accent} accentText={accentText} hidden={c !== mid} loop={loop} qtys={qtys} onQty={onQty} sel={sel[it.id]} selX={sel[`${it.id}#x`]} onSel={onSel} onNeedSpace={onNeedSpace} />
             )))}
         </div>
         {loop && (
@@ -710,6 +720,15 @@ export default function MenuSentidos() {
 
   /* Divisor redimensionable (drag + tap en flechas + teclado) */
   const clamp = (v) => Math.min(0.85, Math.max(0.15, v));
+  // Una tarjeta que no cabe pide "px" de alto: su sección crece y la otra cede (dentro de 15–85 %)
+  const needTop = useCallback((px) => {
+    const H = split.current?.clientHeight;
+    if (H) setRatio((r) => clamp(r + px / H));
+  }, []);
+  const needBottom = useCallback((px) => {
+    const H = split.current?.clientHeight;
+    if (H) setRatio((r) => clamp(r - px / H));
+  }, []);
   // El botón "Listo" también arrastra el divisor: si el dedo casi no se movió, cuenta como toque
   const pill = useRef({ down: false, y: 0, moved: 0 });
   const onPointerDown = (e) => {
@@ -791,7 +810,7 @@ export default function MenuSentidos() {
       {/* ---------- Pantalla dividida ---------- */}
       <main ref={split} className="relative flex min-h-0 flex-1 flex-col">
         <div {...gProps} className={`touch-pan-x min-h-0 shrink-0 overflow-hidden ${dragging ? '' : 'transition-[height] duration-300 ease-out'}`} style={{ height: `${ratio * 100}%` }}>
-          <Section {...SECTIONS[0]} items={comidas} qtys={order} onQty={onQty} sel={sel} onSel={onSel} />
+          <Section {...SECTIONS[0]} items={comidas} qtys={order} onQty={onQty} sel={sel} onSel={onSel} onNeedSpace={needTop} />
         </div>
 
         <div role="separator" aria-orientation="horizontal" aria-valuenow={Math.round(ratio * 100)} aria-valuemin={15} aria-valuemax={85} tabIndex={0}
@@ -810,7 +829,7 @@ export default function MenuSentidos() {
         </div>
 
         <div {...gProps} className="touch-pan-x min-h-0 flex-1 overflow-hidden">
-          <Section {...SECTIONS[1]} items={bebidas} qtys={order} onQty={onQty} sel={sel} onSel={onSel} />
+          <Section {...SECTIONS[1]} items={bebidas} qtys={order} onQty={onQty} sel={sel} onSel={onSel} onNeedSpace={needBottom} />
         </div>
       </main>
 
