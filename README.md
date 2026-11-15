@@ -18,10 +18,10 @@ Los datos salen de una hoja de Google Sheets, así que el personal actualiza pre
 
 Primera pestaña de la hoja, con estas columnas en la fila 1:
 
-| id | tipo | categoria | nombre | descripcion | precio | disponible | destacado | opciones |
-|:---|:---|:---|:---|:---|:---|:---|:---|:---|
-| pf-01 | comida | Platos Fuertes | Res | 250 g de res | 28000 | TRUE | TRUE | `Al vino: en reducción de hogao… \| Chimichurri` |
-| co-01 | bebida | Coctelería | Caipirinha | Cachaza, limón y azúcar | 18000 | TRUE | FALSE | |
+| id | tipo | categoria | nombre | descripcion | precio | disponible | destacado | opciones | extras |
+|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|
+| pf-01 | comida | Platos Fuertes | Res | 250 g de res | 28000 | TRUE | TRUE | `Al vino: en reducción de hogao… \| Chimichurri` | |
+| co-01 | bebida | Coctelería | Caipirinha | Cachaza, limón y azúcar | 18000 | TRUE | FALSE | | |
 
 - `tipo`: `comida` o `bebida`.
 - `disponible`: `FALSE` muestra el sello "Agotado" y quita el botón para agregar.
@@ -40,6 +40,18 @@ Primera pestaña de la hoja, con estas columnas en la fila 1:
   - La descripción de la opción elegida se agrega al final de la descripción del producto.
   - En "Tu pedido" cada combinación sale en su propia línea (por ejemplo, "Cerdo · Criolla").
   - Celda vacía: la tarjeta funciona igual que siempre, sin opciones.
+- `extras` (columna opcional): un segundo grupo de botones cuyo precio se **suma** al del producto o de la opción elegida.
+  Misma sintaxis que `opciones`. La primera entrada sin precio es la elección por defecto (si no hay ninguna, se agrega "Sin extra").
+
+  | nombre | opciones | extras |
+  |:---|:---|:---|
+  | Club Colombia | `Trigo=7000 \| Dorada \| Roja` | `Sola \| Michelada=1000 \| Michelada Tabasco=2000` |
+
+  - En "Tu pedido" sale como "Club Colombia · Trigo · Michelada Tabasco".
+  - Si el producto no tiene precio ("Consultar"), el extra no suma nada.
+
+La carta vuelve a leer la hoja cada minuto y cada vez que se vuelve a ella desde otra app, así que los cambios aparecen sin recargar
+(OpenSheet puede tardar unos segundos extra por su caché).
 
 La hoja debe estar compartida como **"Cualquier persona con el enlace puede ver"**.
 Se lee con [OpenSheet](https://github.com/benborgers/opensheet) usando la **primera pestaña** (`/1`), sin importar su nombre.

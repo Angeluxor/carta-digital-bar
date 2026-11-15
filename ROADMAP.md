@@ -6,7 +6,7 @@ Estado del producto y evolutivos acordados. Este documento es la fuente de verda
 
 - SPA React + Tailwind (`src/MenuSentidos.jsx`), mobile-first, lista para Vercel/Netlify.
 - Datos desde Google Sheets vía OpenSheet (`/<ID_HOJA>/1`, primera pestaña), con respaldo local `INITIAL_DATA`.
-  Columnas: `id, tipo, categoria, nombre, descripcion, precio, disponible, destacado` y `opciones` (opcional).
+  Columnas: `id, tipo, categoria, nombre, descripcion, precio, disponible, destacado` y `opciones`, `extras` (opcionales).
 - Pantalla dividida Comidas / Bebidas con divisor redimensionable (arrastre, flechas ^ v y teclado).
 - Carrusel infinito por sección, tarjetas centradas y chips de categoría.
 - Modo noche / día (el modo día aún no está verificado visualmente en un navegador sin oscurecimiento forzado).
@@ -16,6 +16,10 @@ Estado del producto y evolutivos acordados. Este documento es la fuente de verda
   No se envía a ningún lado.
 - **Opciones por producto**: columna `opciones` (`Etiqueta[=precio][: descripción]`, separadas por `|`).
   Botones dentro de la tarjeta; cada combinación es una línea propia del pedido ("Cerdo · Criolla").
+- **Recarga automática de la hoja**: cada 60 s mientras la carta está visible y al volver a la pestaña
+  (si pasaron más de 10 s). Solo actualiza si los datos cambiaron; el pedido y las selecciones se conservan.
+- **Extras por producto**: columna `extras` con un segundo grupo de botones que suman al precio
+  (p. ej. `Sola | Michelada=1000 | Michelada Tabasco=2000` en las cervezas). Línea del pedido: "Club Colombia · Trigo · Michelada".
 
 ## Evolutivo 1 · Enviar el pedido por WhatsApp
 
