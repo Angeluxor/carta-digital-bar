@@ -1,5 +1,5 @@
 // Datos de respaldo (de menu_sentidos.csv; precio 0 = "Consultar").
-// "opciones" usa la misma sintaxis que la columna de la hoja (ver parseOptions).
+// "opciones" y "extras" usan la misma sintaxis que las columnas de la hoja (ver parseOptions y parseExtras).
 const INITIAL_DATA = [
   {"id":"pf-01","tipo":"comida","categoria":"Platos Fuertes","nombre":"Res","descripcion":"250 g de res","opciones":"Al vino: en reducción de hogao, crema de leche y vino tinto | Chimichurri: en salsa de chimichurri","precio":0,"disponible":true,"destacado":true},
   {"id":"pf-02","tipo":"comida","categoria":"Platos Fuertes","nombre":"Cerdo","descripcion":"250 g de cerdo asado","opciones":"BBQ: con queso mozzarella y salsa BBQ | Chimichurri: en salsa de chimichurri | Criolla: en salsa criolla","precio":0,"disponible":true,"destacado":false},
@@ -25,8 +25,8 @@ const INITIAL_DATA = [
   {"id":"co-11","tipo":"bebida","categoria":"Coctelería","nombre":"Vino Caliente","descripcion":"Vino tinto Jugo de naranja y especias","precio":0,"disponible":true,"destacado":false},
   {"id":"ce-01","tipo":"bebida","categoria":"Cervezas","nombre":"Artesanal 3 Cordilleras","descripcion":"Cerveza artesanal 3 Cordilleras","precio":0,"disponible":true,"destacado":false},
   {"id":"ce-02","tipo":"bebida","categoria":"Cervezas","nombre":"Extranjeras","descripcion":"Cervezas importadas (desde)","precio":0,"disponible":true,"destacado":false},
-  {"id":"ce-03","tipo":"bebida","categoria":"Cervezas","nombre":"Club Colombia","descripcion":"Cerveza nacional","opciones":"Dorada | Roja | Negra","precio":0,"disponible":true,"destacado":false},
-  {"id":"ce-04","tipo":"bebida","categoria":"Cervezas","nombre":"Nacionales Tradicionales","descripcion":"Cerveza nacional","opciones":"Pilsen | Costeña | Águila | Póker","precio":0,"disponible":true,"destacado":false},
+  {"id":"ce-03","tipo":"bebida","categoria":"Cervezas","nombre":"Club Colombia","descripcion":"Cerveza nacional","opciones":"Dorada | Roja | Negra","extras":"Sola | Michelada=1000: preparada con sal y limón | Michelada Tabasco=2000: preparada con sal, limón y picante tabasco","precio":0,"disponible":true,"destacado":false},
+  {"id":"ce-04","tipo":"bebida","categoria":"Cervezas","nombre":"Nacionales Tradicionales","descripcion":"Cerveza nacional","opciones":"Pilsen | Costeña | Águila | Póker","extras":"Sola | Michelada=1000: preparada con sal y limón | Michelada Tabasco=2000: preparada con sal, limón y picante tabasco","precio":0,"disponible":true,"destacado":false},
   {"id":"ce-05","tipo":"bebida","categoria":"Cervezas","nombre":"Tecate","descripcion":"Cerveza Tecate","precio":0,"disponible":true,"destacado":false},
   {"id":"ce-06","tipo":"bebida","categoria":"Cervezas","nombre":"Michelada","descripcion":"Michelada tradicional (Según la cerveza)","precio":0,"disponible":true,"destacado":false},
   {"id":"ce-07","tipo":"bebida","categoria":"Cervezas","nombre":"Michelada Envenenada","descripcion":"Michelada con preparación especial de la casa","precio":0,"disponible":true,"destacado":false},
@@ -113,7 +113,7 @@ const toPrice = (v) => {
  *   Trago=8000 | Media=45000 | Botella=85000: 750 ml
  * Sin precio propio, la opción toma el precio del producto.
  */
-const parseOptions = (v, basePrice) => {
+const parseEntries = (v) => {
   const seen = new Set();
   return String(v ?? '').split('|').map((raw) => {
     const s = raw.trim();
@@ -123,13 +123,37 @@ const parseOptions = (v, basePrice) => {
     const e = head.indexOf('=');
     const label = (e >= 0 ? head.slice(0, e) : head).trim();
     const own = e >= 0 ? toPrice(head.slice(e + 1)) : 0;
-    return { label, desc, precio: own > 0 ? own : basePrice };
+    return { label, desc, own: own > 0 ? own : 0 };
   }).filter((o) => o.label && !seen.has(o.label) && seen.add(o.label));
 };
 
-// Clave de una línea del pedido: el id, o "id::opción" si el producto tiene opciones
+const parseOptions = (v, basePrice) =>
+  parseEntries(v).map(({ label, desc, own }) => ({ label, desc, precio: own || basePrice }));
+
+/*
+ * Columna "extras": un segundo grupo de botones cuyo precio se SUMA al del producto
+ * (o al de la opción elegida). Misma sintaxis que "opciones". La primera entrada sin
+ * precio es la elección por defecto; si no hay ninguna, se agrega "Sin extra".
+ *   Sola | Michelada=1000: preparada con sal y limón | Michelada Tabasco=2000
+ */
+const parseExtras = (v) => {
+  const xs = parseEntries(v).map(({ label, desc, own }) => ({ label, desc, precio: own }));
+  if (!xs.length) return xs;
+  let d = xs.findIndex((x) => x.precio === 0);
+  if (d < 0) { xs.unshift({ label: 'Sin extra', desc: '', precio: 0 }); d = 0; }
+  return xs.map((x, i) => ({ ...x, isDefault: i === d }));
+};
+
+// Clave de una línea del pedido: el id, "id::opción" si tiene opciones,
+// y "…::+extra" si se eligió un extra distinto del de por defecto
 const OPT_SEP = '::';
-const lineKey = (id, label) => (label ? `${id}${OPT_SEP}${label}` : id);
+const lineKey = (id, label, extra) =>
+  `${label ? `${id}${OPT_SEP}${label}` : id}${extra && !extra.isDefault ? `${OPT_SEP}+${extra.label}` : ''}`;
+
+// Precio de una combinación: el extra solo suma si el producto tiene precio
+const comboPrice = (base, extra) => (base > 0 ? base + (extra?.precio || 0) : base);
+const comboLabel = (opt, extra) =>
+  [opt?.label, extra && !extra.isDefault ? extra.label : ''].filter(Boolean).join(' · ');
 
 const normalizeRow = (r, i) => {
   const precio = toPrice(r.precio);
@@ -141,6 +165,7 @@ const normalizeRow = (r, i) => {
     descripcion: String(r.descripcion || '').trim(),
     precio,
     opciones: parseOptions(r.opciones ?? r.Opciones, precio),
+    extras: parseExtras(r.extras ?? r.Extras),
     disponible: toBool(r.disponible, true),
     destacado: toBool(r.destacado, false),
   };
@@ -276,13 +301,20 @@ function OrderSheet({ lines, total, unpriced, time, onQty, onClear, onClose }) {
 /* ------------------------------------------------------------------ */
 /*  Tarjeta tipográfica (sin foto)                                     */
 /* ------------------------------------------------------------------ */
-function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel, onSel }) {
+function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel, selX, onSel }) {
   const opts = item.opciones;
+  const xs = item.extras;
   const cur = opts.length ? (opts.find((o) => o.label === sel) || opts[0]) : null;
-  const key = lineKey(item.id, cur?.label);
+  const curX = xs.length ? (xs.find((x) => x.label === selX) || xs.find((x) => x.isDefault)) : null;
+  const key = lineKey(item.id, cur?.label, curX);
   const qty = qtys[key] || 0;
-  const precio = cur ? cur.precio : item.precio;
-  const label = cur ? `${item.nombre} ${cur.label}` : item.nombre;
+  const base = cur ? cur.precio : item.precio;
+  const precio = comboPrice(base, curX);
+  const combo = comboLabel(cur, curX);
+  const label = combo ? `${item.nombre} ${combo}` : item.nombre;
+  // Unidades de una opción sumando todos sus extras (para el contador del botón)
+  const countOpt = (o) => (xs.length ? xs : [null]).reduce((n, x) => n + (qtys[lineKey(item.id, o?.label, x)] || 0), 0);
+  const descs = [cur?.desc, curX?.desc].filter(Boolean).join(', ');
   return (
     <article
       aria-hidden={hidden || undefined}
@@ -304,11 +336,11 @@ function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel,
         <h3 className={`mt-2 font-display font-bold leading-[1.05] tracking-tight text-ink ${item.nombre.length > 22 ? 'text-[1.7rem]' : 'text-[2rem]'}`}>{item.nombre}</h3>
         <div className="my-2.5 h-0.5 w-12 rounded-full" style={{ background: accent }} />
         <div className="flex-1">
-          {(item.descripcion || cur?.desc) && (
+          {(item.descripcion || descs) && (
             <p className="desc text-body">
               {item.descripcion}
-              {/* El detalle de la opción elegida continúa la descripción, resaltado */}
-              {cur?.desc && <span className="italic" style={{ color: accentText }}>{item.descripcion ? ' ' : ''}{cur.desc}</span>}
+              {/* El detalle de la opción (y del extra) elegidos continúa la descripción, resaltado */}
+              {descs && <span className="italic" style={{ color: accentText }}>{item.descripcion ? ' ' : ''}{descs}</span>}
             </p>
           )}
           {/* Opciones (salsa, presentación…): se elige una y el "+" agrega esa combinación */}
@@ -317,7 +349,7 @@ function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel,
               <div role="radiogroup" aria-label={`Opciones de ${item.nombre}`} className="flex flex-wrap gap-1.5">
                 {opts.map((o) => {
                   const on = o.label === cur.label;
-                  const n = qtys[lineKey(item.id, o.label)] || 0;
+                  const n = countOpt(o);
                   return (
                     <button key={o.label} type="button" role="radio" aria-checked={on} tabIndex={hidden ? -1 : 0}
                       disabled={!item.disponible} onClick={() => onSel(item.id, o.label)}
@@ -328,6 +360,25 @@ function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel,
                   );
                 })}
               </div>
+            </div>
+          )}
+          {/* Extras (michelada…): suman al precio; el de por defecto no cambia nada */}
+          {curX && (
+            <div role="radiogroup" aria-label={`Extras de ${item.nombre}`} className="mt-1.5 flex flex-wrap gap-1.5">
+              {xs.map((x) => {
+                const on = x.label === curX.label;
+                const n = qtys[lineKey(item.id, cur?.label, x)] || 0;
+                return (
+                  <button key={x.label} type="button" role="radio" aria-checked={on} tabIndex={hidden ? -1 : 0}
+                    disabled={!item.disponible} onClick={() => onSel(`${item.id}#x`, x.label)}
+                    className={`opt rounded-full border border-dashed px-2.5 py-1 text-xs font-semibold leading-none transition active:scale-95 ${on ? 'text-black' : 'text-ink'}`}
+                    style={on ? { background: accent, borderColor: accent, borderStyle: 'solid' } : { borderColor: accent }}>
+                    {x.label}
+                    {x.precio > 0 && base > 0 && <span className={on ? '' : 'opacity-70'}> +{formatPrice(x.precio)}</span>}
+                    {n > 0 && <span className={on ? '' : 'opacity-70'}> · {n}</span>}
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
@@ -439,7 +490,7 @@ function Section({ titulo, accent, accentText, items, qtys, onQty, sel, onSel })
           className={`no-scrollbar touch-pan-x flex h-full gap-3 overflow-x-auto scroll-smooth pb-1 ${loop ? 'snap-x snap-mandatory' : 'snap-x snap-proximity'} ${n === 0 ? 'invisible' : ''}`}>
           {Array.from({ length: copies }).flatMap((_, c) =>
             visible.map((it, i) => (
-              <Card key={`${it.id}-${c}`} item={it} index={i} accent={accent} accentText={accentText} hidden={c !== mid} loop={loop} qtys={qtys} onQty={onQty} sel={sel[it.id]} onSel={onSel} />
+              <Card key={`${it.id}-${c}`} item={it} index={i} accent={accent} accentText={accentText} hidden={c !== mid} loop={loop} qtys={qtys} onQty={onQty} sel={sel[it.id]} selX={sel[`${it.id}#x`]} onSel={onSel} />
             )))}
         </div>
         {loop && (
@@ -510,14 +561,17 @@ export default function MenuSentidos() {
   const [sel, setSel] = useState({});
   const onSel = useCallback((id, label) => setSel((m) => ({ ...m, [id]: label })), []);
 
-  // Solo cuentan los platos (y opciones) que siguen existiendo y disponibles en la hoja
+  // Solo cuentan los platos (y combinaciones opción + extra) que siguen existiendo y disponibles en la hoja
   const lines = useMemo(() => data.flatMap((d) => {
     if (!d.disponible) return [];
-    if (!d.opciones.length) return order[d.id] > 0 ? [{ ...d, key: d.id, opcion: '', qty: order[d.id] }] : [];
-    return d.opciones
-      .map((o) => ({ ...d, key: lineKey(d.id, o.label), opcion: o.label, precio: o.precio }))
-      .filter((l) => order[l.key] > 0)
-      .map((l) => ({ ...l, qty: order[l.key] }));
+    const opts = d.opciones.length ? d.opciones : [null];
+    const xs = d.extras.length ? d.extras : [null];
+    return opts.flatMap((o) => xs.map((x) => {
+      const key = lineKey(d.id, o?.label, x);
+      return order[key] > 0
+        ? { ...d, key, opcion: comboLabel(o, x), precio: comboPrice(o ? o.precio : d.precio, x), qty: order[key] }
+        : null;
+    })).filter(Boolean);
   }), [data, order]);
   const count = lines.reduce((n, l) => n + l.qty, 0);
   const total = lines.reduce((t, l) => t + l.precio * l.qty, 0);
