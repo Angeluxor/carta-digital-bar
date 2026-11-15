@@ -18,6 +18,10 @@ Estado del producto y evolutivos acordados. Este documento es la fuente de verda
   Botones dentro de la tarjeta; cada combinación es una línea propia del pedido ("Cerdo · Criolla").
 - **Vista "tabla"** (columna `vista`): las opciones se muestran como lista de precios por presentación (licores).
   Extras sin precio funcionan como variedad (tapa, marca) y siempre aparecen en el pedido.
+- **Arabescos provisionales** contra el horror vacui: medallón de volutas si sobra mucho espacio en la tarjeta,
+  cenefa horizontal si sobra poco y nada en tarjetas llenas (container queries). Pendiente: ornamento definitivo de marca.
+- **Redimensión automática**: al tocar una tarjeta cuyo contenido no cabe, el divisor se mueve para darle a su sección
+  el alto que necesita (dentro de 15–85 %). La tabla de licores es más compacta.
 - **Recarga automática de la hoja**: cada 60 s mientras la carta está visible y al volver a la pestaña
   (si pasaron más de 10 s). Solo actualiza si los datos cambiaron; el pedido y las selecciones se conservan.
 - **Extras por producto**: columna `extras` con un segundo grupo de botones que suman al precio

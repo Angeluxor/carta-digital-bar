@@ -168,6 +168,8 @@ const normalizeRow = (r, i) => {
     nombre: String(r.nombre || '').trim(),
     descripcion: String(r.descripcion || '').trim(),
     precio,
+    // Texto en la celda de precio ("Según marca") se muestra tal cual en lugar de "Consultar"
+    precioTexto: precio > 0 || /\d/.test(String(r.precio ?? '')) ? '' : String(r.precio ?? '').trim(),
     opciones: parseOptions(r.opciones ?? r.Opciones, precio),
     extras: parseExtras(r.extras ?? r.Extras),
     // "tabla": las opciones se muestran como lista de precios (licores: trago, media, botella…)
@@ -271,7 +273,7 @@ function OrderSheet({ lines, total, unpriced, time, onQty, onClear, onClose }) {
                           {l.nombre}
                           {l.opcion && <span style={{ color: g.text }}> · {l.opcion}</span>}
                         </p>
-                        <p className="text-xs text-muted">{l.precio > 0 ? `${formatPrice(l.precio)} c/u` : 'Precio por consultar'}</p>
+                        <p className="text-xs text-muted">{l.precio > 0 ? `${formatPrice(l.precio)} c/u` : `Precio: ${(l.precioTexto || 'por consultar').toLowerCase()}`}</p>
                       </div>
                       <Stepper qty={l.qty} onChange={(d) => onQty(l.key, d)} accent={g.accent} textColor={g.text} label={l.opcion ? `${l.nombre} ${l.opcion}` : l.nombre} />
                       <p className="w-24 text-right font-display text-lg font-bold" style={{ color: g.text }}>
@@ -307,7 +309,59 @@ function OrderSheet({ lines, total, unpriced, time, onQty, onClear, onClose }) {
 /* ------------------------------------------------------------------ */
 /*  Tarjeta tipográfica (sin foto)                                     */
 /* ------------------------------------------------------------------ */
-function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel, selX, onSel }) {
+/* ------------------------------------------------------------------ */
+/*  Arabesco (provisional): medallón de volutas simétricas en SVG      */
+/* ------------------------------------------------------------------ */
+// Una voluta: sale del centro, se abre y termina en espiral
+const SCROLL = 'M0 -9 C 5 -17, 16 -19, 20 -29 C 23 -37, 16 -43, 10 -39 C 6 -36, 8 -30, 13 -31';
+const LEAF = 'M0 -12 C 3 -18, 3 -24, 0 -30 C -3 -24, -3 -18, 0 -12 Z';
+function Arabesque({ color }) {
+  const arms = [0, 90, 180, 270];
+  return (
+    <svg viewBox="-50 -50 100 100" className="arabesque h-full max-h-32 w-auto max-w-full opacity-30" style={{ color }}
+      fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round">
+      {arms.map((a) => (
+        <g key={a} transform={`rotate(${a})`}>
+          <path d={SCROLL} />
+          <path d={SCROLL} transform="scale(-1,1)" />
+          <path d={LEAF} transform="rotate(45)" fill="currentColor" fillOpacity="0.35" />
+          <circle cx="0" cy="-42" r="1.6" fill="currentColor" stroke="none" />
+        </g>
+      ))}
+      <circle r="6" />
+      <path d="M0 -3.5 L3.5 0 L0 3.5 L-3.5 0 Z" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+// Cenefa horizontal para espacios bajos (donde el medallón quedaría diminuto)
+const CURL = 'M9 0 C 15 -9, 27 -9, 29 -2 C 31 4, 24 7, 21 2';
+function Flourish({ color }) {
+  return (
+    <svg viewBox="-100 -14 200 28" className="flourish w-3/4 max-w-[13rem] opacity-30" style={{ color }}
+      fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round">
+      {[1, -1].map((d) => (
+        <g key={d} transform={`scale(${d},1)`}>
+          <path d={CURL} />
+          <path d={CURL} transform="scale(1,-1)" />
+          <path d="M31 0 H 92" />
+          <circle cx="96" cy="0" r="1.6" fill="currentColor" stroke="none" />
+        </g>
+      ))}
+      <path d="M0 -5 L5 0 L0 5 L-5 0 Z" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel, selX, onSel, onNeedSpace }) {
+  // Si al tocar la tarjeta su contenido no cabe, pide más alto a la pantalla dividida
+  const ref = useRef(null);
+  const checkFit = () => requestAnimationFrame(() => requestAnimationFrame(() => {
+    const el = ref.current;
+    if (!el || !onNeedSpace) return;
+    const extra = el.scrollHeight - el.clientHeight;
+    if (extra > 2) onNeedSpace(extra + 8);
+  }));
   const opts = item.opciones;
   const xs = item.extras;
   const cur = opts.length ? (opts.find((o) => o.label === sel) || opts[0]) : null;
@@ -323,6 +377,8 @@ function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel,
   const descs = [cur?.desc, curX?.desc].filter(Boolean).join(', ');
   return (
     <article
+      ref={ref}
+      onClick={checkFit}
       aria-hidden={hidden || undefined}
       style={{ borderColor: accent, animationDelay: `${Math.min(index, 8) * 45}ms` }}
       className={`fade-up no-scrollbar touch-pan-x relative flex h-full w-[72vw] max-w-[17rem] shrink-0 flex-col overflow-y-auto rounded-xl border-2 bg-surface p-4 transition-transform duration-300 hover:-translate-y-0.5 sm:w-64 ${loop ? 'snap-center' : 'snap-start'}`}
@@ -341,7 +397,7 @@ function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel,
         </div>
         <h3 className={`mt-2 font-display font-bold leading-[1.05] tracking-tight text-ink ${item.nombre.length > 22 ? 'text-[1.7rem]' : 'text-[2rem]'}`}>{item.nombre}</h3>
         <div className="my-2.5 h-0.5 w-12 rounded-full" style={{ background: accent }} />
-        <div className="flex-1">
+        <div className="flex min-h-0 flex-1 flex-col">
           {(item.descripcion || descs) && (
             <p className="desc text-body">
               {item.descripcion}
@@ -371,14 +427,14 @@ function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel,
           )}
           {/* Vista "tabla": cada presentación es una fila con su precio; se toca para elegirla */}
           {cur && item.vista === 'tabla' && (
-            <div role="radiogroup" aria-label={`Presentaciones de ${item.nombre}`} className="mt-2.5 flex flex-col gap-0.5">
+            <div role="radiogroup" aria-label={`Presentaciones de ${item.nombre}`} className="mt-2 flex flex-col">
               {opts.map((o) => {
                 const on = o.label === cur.label;
                 const n = countOpt(o);
                 return (
                   <button key={o.label} type="button" role="radio" aria-checked={on} tabIndex={hidden ? -1 : 0}
                     disabled={!item.disponible} onClick={() => onSel(item.id, o.label)}
-                    className={`opt flex items-baseline gap-2 rounded-md px-2 py-1 text-left text-sm transition active:scale-[.98] ${on ? 'font-semibold text-black' : 'text-ink'}`}
+                    className={`opt flex items-baseline gap-2 rounded-md px-2 py-0.5 text-left text-sm transition active:scale-[.98] ${on ? 'font-semibold text-black' : 'text-ink'}`}
                     style={on ? { background: accent } : undefined}>
                     <span>{o.label}{n > 0 && <span className={on ? '' : 'opacity-70'}> · {n}</span>}</span>
                     <span className={`mb-1 flex-1 border-b border-dotted ${on ? 'border-black/40' : 'opacity-40'}`} style={on ? undefined : { borderColor: accent }} />
@@ -428,6 +484,13 @@ function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel,
             </div>
           )}
           </>)}
+          {/* Arabesco provisional: ocupa el espacio que sobra; en tarjetas llenas se encoge hasta desaparecer */}
+          <div aria-hidden="true" className="arabesque-box pointer-events-none relative min-h-0 flex-1">
+            <div className="absolute inset-0 flex items-center justify-center py-1">
+              <Arabesque color={accent} />
+              <Flourish color={accent} />
+            </div>
+          </div>
         </div>
         {/* Precio a la derecha, con línea punteada guía como en las cartas impresas */}
         <div className="mt-3 flex items-end gap-2">
@@ -435,7 +498,7 @@ function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel,
             <Stepper qty={qty} onChange={(d) => onQty(key, d)} accent={accent} textColor={accentText} label={label} tabIndex={hidden ? -1 : 0} />
           )}
           <span className="mb-1.5 flex-1 border-b border-dotted opacity-50" style={{ borderColor: accent }} />
-          <p className="price font-display text-xl font-bold" style={{ color: accentText }}>{formatPrice(precio)}</p>
+          <p className="price font-display text-xl font-bold" style={{ color: accentText }}>{precio > 0 ? formatPrice(precio) : (item.precioTexto || formatPrice(precio))}</p>
         </div>
       </div>
       {!item.disponible && (
@@ -448,7 +511,7 @@ function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel,
 /* ------------------------------------------------------------------ */
 /*  Sección con pills, dropdown y carrusel                             */
 /* ------------------------------------------------------------------ */
-function Section({ titulo, accent, accentText, items, qtys, onQty, sel, onSel }) {
+function Section({ titulo, accent, accentText, items, qtys, onQty, sel, onSel, onNeedSpace }) {
   const categorias = useMemo(() => ['Todas', ...new Set(items.map((i) => i.categoria))], [items]);
   const [cat, setCat] = useState('Todas');
   const scroller = useRef(null);
@@ -537,7 +600,7 @@ function Section({ titulo, accent, accentText, items, qtys, onQty, sel, onSel })
           className={`no-scrollbar touch-pan-x flex h-full gap-3 overflow-x-auto scroll-smooth pb-1 ${loop ? 'snap-x snap-mandatory' : 'snap-x snap-proximity'} ${n === 0 ? 'invisible' : ''}`}>
           {Array.from({ length: copies }).flatMap((_, c) =>
             visible.map((it, i) => (
-              <Card key={`${it.id}-${c}`} item={it} index={i} accent={accent} accentText={accentText} hidden={c !== mid} loop={loop} qtys={qtys} onQty={onQty} sel={sel[it.id]} selX={sel[`${it.id}#x`]} onSel={onSel} />
+              <Card key={`${it.id}-${c}`} item={it} index={i} accent={accent} accentText={accentText} hidden={c !== mid} loop={loop} qtys={qtys} onQty={onQty} sel={sel[it.id]} selX={sel[`${it.id}#x`]} onSel={onSel} onNeedSpace={onNeedSpace} />
             )))}
         </div>
         {loop && (
@@ -657,6 +720,15 @@ export default function MenuSentidos() {
 
   /* Divisor redimensionable (drag + tap en flechas + teclado) */
   const clamp = (v) => Math.min(0.85, Math.max(0.15, v));
+  // Una tarjeta que no cabe pide "px" de alto: su sección crece y la otra cede (dentro de 15–85 %)
+  const needTop = useCallback((px) => {
+    const H = split.current?.clientHeight;
+    if (H) setRatio((r) => clamp(r + px / H));
+  }, []);
+  const needBottom = useCallback((px) => {
+    const H = split.current?.clientHeight;
+    if (H) setRatio((r) => clamp(r - px / H));
+  }, []);
   // El botón "Listo" también arrastra el divisor: si el dedo casi no se movió, cuenta como toque
   const pill = useRef({ down: false, y: 0, moved: 0 });
   const onPointerDown = (e) => {
@@ -738,7 +810,7 @@ export default function MenuSentidos() {
       {/* ---------- Pantalla dividida ---------- */}
       <main ref={split} className="relative flex min-h-0 flex-1 flex-col">
         <div {...gProps} className={`touch-pan-x min-h-0 shrink-0 overflow-hidden ${dragging ? '' : 'transition-[height] duration-300 ease-out'}`} style={{ height: `${ratio * 100}%` }}>
-          <Section {...SECTIONS[0]} items={comidas} qtys={order} onQty={onQty} sel={sel} onSel={onSel} />
+          <Section {...SECTIONS[0]} items={comidas} qtys={order} onQty={onQty} sel={sel} onSel={onSel} onNeedSpace={needTop} />
         </div>
 
         <div role="separator" aria-orientation="horizontal" aria-valuenow={Math.round(ratio * 100)} aria-valuemin={15} aria-valuemax={85} tabIndex={0}
@@ -757,7 +829,7 @@ export default function MenuSentidos() {
         </div>
 
         <div {...gProps} className="touch-pan-x min-h-0 flex-1 overflow-hidden">
-          <Section {...SECTIONS[1]} items={bebidas} qtys={order} onQty={onQty} sel={sel} onSel={onSel} />
+          <Section {...SECTIONS[1]} items={bebidas} qtys={order} onQty={onQty} sel={sel} onSel={onSel} onNeedSpace={needBottom} />
         </div>
       </main>
 
