@@ -143,7 +143,9 @@ const parseExtras = (v) => {
   if (!xs.length) return xs;
   let d = xs.findIndex((x) => x.precio === 0);
   if (d < 0) { xs.unshift({ label: 'Sin extra', desc: '', precio: 0 }); d = 0; }
-  return xs.map((x, i) => ({ ...x, isDefault: i === d }));
+  // Si ningún extra tiene precio es una variedad (Tapa Roja | Tapa Azul…): su nombre siempre va en el pedido
+  const variant = xs.every((x) => x.precio === 0);
+  return xs.map((x, i) => ({ ...x, isDefault: i === d, show: variant }));
 };
 
 // Clave de una línea del pedido: el id, "id::opción" si tiene opciones,
@@ -155,7 +157,7 @@ const lineKey = (id, label, extra) =>
 // Precio de una combinación: el extra solo suma si el producto tiene precio
 const comboPrice = (base, extra) => (base > 0 ? base + (extra?.precio || 0) : base);
 const comboLabel = (opt, extra) =>
-  [opt?.label, extra && !extra.isDefault ? extra.label : ''].filter(Boolean).join(' · ');
+  [opt?.label, extra && (!extra.isDefault || extra.show) ? extra.label : ''].filter(Boolean).join(' · ');
 
 const normalizeRow = (r, i) => {
   const precio = toPrice(r.precio);
@@ -168,6 +170,8 @@ const normalizeRow = (r, i) => {
     precio,
     opciones: parseOptions(r.opciones ?? r.Opciones, precio),
     extras: parseExtras(r.extras ?? r.Extras),
+    // "tabla": las opciones se muestran como lista de precios (licores: trago, media, botella…)
+    vista: norm(r.vista ?? r.Vista) === 'tabla' ? 'tabla' : 'botones',
     disponible: toBool(r.disponible, true),
     destacado: toBool(r.destacado, false),
   };
@@ -345,8 +349,48 @@ function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel,
               {descs && <span className="italic" style={{ color: accentText }}>{item.descripcion ? ' ' : ''}{descs}</span>}
             </p>
           )}
+          {item.vista === 'tabla' ? (<>
+          {/* Extras (michelada…): suman al precio; el de por defecto no cambia nada */}
+          {curX && (
+            <div role="radiogroup" aria-label={`Extras de ${item.nombre}`} className="mt-1.5 flex flex-wrap gap-1.5">
+              {xs.map((x) => {
+                const on = x.label === curX.label;
+                const n = qtys[lineKey(item.id, cur?.label, x)] || 0;
+                return (
+                  <button key={x.label} type="button" role="radio" aria-checked={on} tabIndex={hidden ? -1 : 0}
+                    disabled={!item.disponible} onClick={() => onSel(`${item.id}#x`, x.label)}
+                    className={`opt rounded-full border border-dashed px-2.5 py-1 text-xs font-semibold leading-none transition active:scale-95 ${on ? 'text-black' : 'text-ink'}`}
+                    style={on ? { background: accent, borderColor: accent, borderStyle: 'solid' } : { borderColor: accent }}>
+                    {x.label}
+                    {x.precio > 0 && base > 0 && <span className={on ? '' : 'opacity-70'}> +{formatPrice(x.precio)}</span>}
+                    {n > 0 && <span className={on ? '' : 'opacity-70'}> · {n}</span>}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {/* Vista "tabla": cada presentación es una fila con su precio; se toca para elegirla */}
+          {cur && item.vista === 'tabla' && (
+            <div role="radiogroup" aria-label={`Presentaciones de ${item.nombre}`} className="mt-2.5 flex flex-col gap-0.5">
+              {opts.map((o) => {
+                const on = o.label === cur.label;
+                const n = countOpt(o);
+                return (
+                  <button key={o.label} type="button" role="radio" aria-checked={on} tabIndex={hidden ? -1 : 0}
+                    disabled={!item.disponible} onClick={() => onSel(item.id, o.label)}
+                    className={`opt flex items-baseline gap-2 rounded-md px-2 py-1 text-left text-sm transition active:scale-[.98] ${on ? 'font-semibold text-black' : 'text-ink'}`}
+                    style={on ? { background: accent } : undefined}>
+                    <span>{o.label}{n > 0 && <span className={on ? '' : 'opacity-70'}> · {n}</span>}</span>
+                    <span className={`mb-1 flex-1 border-b border-dotted ${on ? 'border-black/40' : 'opacity-40'}`} style={on ? undefined : { borderColor: accent }} />
+                    <span className="font-display font-bold" style={on ? undefined : { color: accentText }}>{formatPrice(comboPrice(o.precio, curX))}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          </>) : (<>
           {/* Opciones (salsa, presentación…): se elige una y el "+" agrega esa combinación */}
-          {cur && (
+          {cur && item.vista !== 'tabla' && (
             <div className="mt-2.5">
               <div role="radiogroup" aria-label={`Opciones de ${item.nombre}`} className="flex flex-wrap gap-1.5">
                 {opts.map((o) => {
@@ -383,6 +427,7 @@ function Card({ item, accent, accentText, index, hidden, loop, qtys, onQty, sel,
               })}
             </div>
           )}
+          </>)}
         </div>
         {/* Precio a la derecha, con línea punteada guía como en las cartas impresas */}
         <div className="mt-3 flex items-end gap-2">

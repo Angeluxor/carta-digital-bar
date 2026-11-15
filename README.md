@@ -49,6 +49,9 @@ Primera pestaña de la hoja, con estas columnas en la fila 1:
 
   - En "Tu pedido" sale como "Club Colombia · Trigo · Michelada Tabasco".
   - Si el producto no tiene precio ("Consultar"), el extra no suma nada.
+  - Si ningún extra tiene precio, funcionan como **variedad** (`Tapa Roja | Tapa Azul | Tapa Verde`) y su nombre siempre sale en el pedido.
+- `vista` (columna opcional): `tabla` muestra las opciones como una lista de precios en vez de botones
+  (licores: `Trago=8000 | Media=45000 | Botella=85000`). Se toca una fila para elegirla y el `+` la agrega. Vacío = botones.
 
 La carta vuelve a leer la hoja cada minuto y cada vez que se vuelve a ella desde otra app, así que los cambios aparecen sin recargar
 (OpenSheet puede tardar unos segundos extra por su caché).
